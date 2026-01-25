@@ -26,16 +26,15 @@ function setConfirmMessage(msg) {
 }
 
 function showBlocked(msg) {
-    if (form) form.style.display = "none";
-    if (rsvpButtons) rsvpButtons.style.display = "none";
-    if (centerInfo) centerInfo.style.display = "block";
+    form.style.display = "none";
+    rsvpButtons.style.display = "none";
+    centerInfo.style.display = "block";
     setConfirmMessage(msg);
 }
 
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
-    // maxGuests = 1 -> ne prikazuj dropdown, automatski 1
     if (!Number.isFinite(mg) || mg <= 1) {
         brojOsobaEl.style.display = "none";
         brojOsobaEl.innerHTML = "";
@@ -47,17 +46,14 @@ function setupBrojOsoba(maxGuests) {
         return;
     }
 
-    // maxGuests >= 2 -> prikaži dropdown 1..mg
     brojOsobaEl.style.display = "block";
     brojOsobaEl.innerHTML = "";
-
     for (let i = 1; i <= mg; i++) {
         const opt = document.createElement("option");
         opt.value = String(i);
         opt.textContent = String(i);
         brojOsobaEl.appendChild(opt);
     }
-
     brojOsobaEl.value = "1";
 }
 
@@ -101,8 +97,8 @@ async function validateTokenAndSetup() {
     }
 }
 
-/* klik -> koverta sklizne lijevo + pokaži pozivnicu */
-envelope?.addEventListener("click", () => {
+/* KOVERAT -> POZIVNICA */
+envelope.addEventListener("click", () => {
     envelope.classList.add("open");
     setTimeout(() => {
         envelope.style.display = "none";
@@ -110,14 +106,14 @@ envelope?.addEventListener("click", () => {
     }, 760);
 });
 
-/* klik na Dolazim/Ne dolazim -> ODMAH šalje */
+/* Klik na Dolazim/Ne dolazim -> ODMAH šalje */
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", async () => {
         const odgovor = btn.dataset.value;
         odgovorInput.value = odgovor;
 
-        // sakrij dugmad odmah da ne klikću više puta
-        rsvpButtons.style.display = "none";
+        // disable da ne kliknu više puta
+        choiceButtons.forEach(b => b.disabled = true);
 
         const broj = (brojOsobaEl.style.display === "none") ? "1" : brojOsobaEl.value;
 
@@ -128,18 +124,15 @@ choiceButtons.forEach((btn) => {
         formData.append("brojOsoba", broj);
 
         try {
-            const res = await fetch(SCRIPT_URL, {
-                method: "POST",
-                body: formData
-            });
-
+            const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
             const text = await res.text();
+
             let data = { ok: true };
             try { data = JSON.parse(text); } catch { }
 
             if (!data.ok) {
-                // ako javlja grešku (npr. već poslato), vrati dugmad i pokaži poruku
-                rsvpButtons.style.display = "flex";
+                // vrati dugmad ako je greška (npr. već poslato)
+                choiceButtons.forEach(b => b.disabled = false);
                 setConfirmMessage(data.error || "Greška pri slanju.");
                 return;
             }
@@ -159,8 +152,7 @@ choiceButtons.forEach((btn) => {
             thankYou.classList.add("show");
 
         } catch (err) {
-            // ako fetch pukne, vrati dugmad da mogu opet pokušati
-            rsvpButtons.style.display = "flex";
+            choiceButtons.forEach(b => b.disabled = false);
             setConfirmMessage("Greška pri slanju. Pokušajte ponovo.");
         }
     });
