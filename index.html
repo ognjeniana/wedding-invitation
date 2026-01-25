@@ -2,76 +2,90 @@
 <html lang="sr">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ana i Ognjen – Pozivnica</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ana & Ognjen – Pozivnica</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-    <!-- KOVERAT -->
-    <div class="envelope-wrapper">
-        <div id="envelope" class="envelope">
-            <!-- ovdje ide slika koverte preko CSS-a -->
-        </div>
-    </div>
+    <div class="background">
 
-    <!-- POZIVNICA -->
-    <div id="invitationWrap" class="invitation-wrap">
+        <!-- KOVERAT (SLIKA) -->
+        <button class="envelope-photo" id="envelope" aria-label="Otvori pozivnicu"></button>
 
-        <div class="invitation">
+        <!-- POZIVNICA -->
+        <div class="invitation-wrap" id="invitationWrap">
+            <div class="invitation-card">
+                <div class="paper">
 
-            <!-- IMENA -->
-            <h1 class="names">Ana &amp; Ognjen</h1>
+                    <div class="topline">POZIVAMO VAS DA SA NAMA PROSLAVITE</div>
 
-            <!-- TEKST -->
-            <div class="text">
-                <p>Pozivamo vas da sa nama proslavite</p>
-                <h2>Naše vjenčanje</h2>
+                    <div class="names">
+                        <span class="nm">ANA</span>
+                        <span class="amp">&amp;</span>
+                        <span class="nm">OGNJEN</span>
+                    </div>
 
-                <p class="date">
-                    Subota, 18.04.2026.<br>
-                    Prijem gostiju od 14:30h do 15:30h
-                </p>
+                    <div class="date-row">
+                        <div class="date-box">
+                            <div class="label">SUBOTA</div>
+                            <div class="line"></div>
+                        </div>
 
-                <p class="location">
-                    Sala Princess, Valdanos<br>
-                    Ulcinj
-                </p>
-            </div>
+                        <div class="date-center">
+                            <div class="month">APRIL</div>
+                            <div class="day">18</div>
+                            <div class="year">2026</div>
+                        </div>
 
-            <!-- CENTRALNA INFO / PORUKE -->
-            <div id="centerInfo" class="center-info">
-                <p class="confirm">Molimo vas da potvrdite dolazak</p>
-            </div>
+                        <div class="date-box">
+                            <div class="label">PRIJEM GOSTIJU</div>
+                            <div class="line"></div>
+                            <div class="sub">14:30 – 15:30 h</div>
+                        </div>
+                    </div>
 
-            <!-- RSVP -->
-            <form id="rsvpForm" class="rsvp">
-                <input type="text" name="ime" placeholder="Ime i prezime" required>
+                    <div class="center-info" id="centerInfo">
+                        <div class="place">SALA PRINCESS</div>
+                        <div class="addr">VALDANOS · ULCINJ</div>
+                        <div class="place-line"></div>
+                        <div class="confirm">Molimo vas da potvrdite dolazak</div>
+                    </div>
 
-                <input type="hidden" name="odgovor" id="odgovor" required>
-                <input type="hidden" name="token" id="token">
+                    <!-- RSVP -->
+                    <form id="rsvpForm" class="rsvp">
+                        <input type="text" name="ime" placeholder="Ime i prezime" required>
 
-                <select name="brojOsoba" id="brojOsoba" required></select>
+                        <input type="hidden" name="odgovor" id="odgovor" required>
+                        <input type="hidden" name="token" id="token" required>
 
-                <div class="rsvp-buttons" id="rsvpButtons">
-                    <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
-                    <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
+                        <select name="brojOsoba" id="brojOsoba" required></select>
+
+                        <div class="rsvp-buttons" id="rsvpButtons">
+                            <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
+                            <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
+                        </div>
+
+                        <button type="submit" class="submit hidden" id="submitBtn">Pošalji odgovor</button>
+                    </form>
+
+                    <div class="thank-you hidden" id="thankYou">
+                        Hvala vam na odgovoru. Radujemo se vašem dolasku.
+                    </div>
+
                 </div>
-
-                <button type="submit" class="submit hidden" id="submitBtn">
-                    Pošalji odgovor
-                </button>
-            </form>
-
-            <!-- HVALA -->
-            <div class="thank-you hidden" id="thankYou">
-                Hvala vam na odgovoru. Radujemo se vašem dolasku.
             </div>
-
         </div>
+
     </div>
 
     <script src="script.js"></script>

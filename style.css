@@ -32,9 +32,7 @@ body {
         linear-gradient(180deg, #fff, #fbf7f1);
 }
 
-/* =========================
-   KOVERAT = JEDNA SLIKA
-========================= */
+/* KOVERAT */
 .envelope-photo {
     width: 360px;
     height: 560px;
@@ -45,14 +43,8 @@ body {
     background: url("envelope-photo.png") center/cover no-repeat;
     box-shadow: 0 28px 70px rgba(0, 0, 0, .20);
     transform: rotate(-4deg);
-    transition: transform .2s ease;
 }
 
-.envelope-photo:active {
-    transform: rotate(-4deg) scale(0.99);
-}
-
-/* sklizne LIJEVO */
 .envelope-photo.open {
     animation: slideLeft .8s ease forwards;
     pointer-events: none;
@@ -65,9 +57,7 @@ body {
     }
 }
 
-/* =========================
-   POZIVNICA
-========================= */
+/* POZIVNICA */
 .invitation-wrap {
     display: none;
     width: min(720px, 100%);
@@ -112,47 +102,24 @@ body {
     margin-bottom: 16px;
 }
 
-.monogram {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 18px;
-    margin: 6px 0 10px;
-}
-
-.initial {
-    font-family: "Playfair Display", serif;
-    font-weight: 600;
-    font-size: 86px;
-    line-height: 1;
-}
-
-.rings {
-    width: 74px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.rings-svg {
-    width: 74px;
-    height: 74px;
-}
-
 .names {
-    margin-top: 6px;
-    font-size: 16px;
+    margin-top: 10px;
+    font-size: 18px;
     letter-spacing: .18em;
     font-family: "Playfair Display", serif;
 }
 
 .names .amp {
+    font-family: "Cormorant Garamond", serif;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: 0;
+    opacity: 0.8;
+    position: relative;
+    top: 1px;
     margin: 0 10px;
-    opacity: .75;
-    font-weight: 400;
 }
 
-/* DATUM BLOK + LINIJE PO SREDINI */
 .date-row {
     margin: 22px auto 14px;
     width: min(440px, 100%);
@@ -210,7 +177,6 @@ body {
     color: var(--ink-soft);
 }
 
-/* Lokacija + LINIJA ISPOD */
 .center-info {
     margin: 18px 0 6px;
     text-align: center;
@@ -255,7 +221,8 @@ body {
     gap: 10px;
 }
 
-.rsvp input {
+.rsvp input,
+.rsvp select {
     padding: 12px 12px;
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.12);
@@ -268,9 +235,7 @@ body {
     display: flex;
     gap: 12px;
     justify-content: center;
-    /* ← OVO CENTRIRA */
 }
-
 
 .choice,
 .submit {
@@ -282,11 +247,6 @@ body {
     cursor: pointer;
     font-family: "Playfair Display", serif;
     letter-spacing: .08em;
-}
-
-.choice:active,
-.submit:active {
-    transform: translateY(1px);
 }
 
 .thank-you {
@@ -314,23 +274,8 @@ body {
         padding: 32px 18px 26px;
     }
 
-    .initial {
-        font-size: 74px;
-    }
-
     .envelope-photo {
         width: 330px;
         height: 520px;
     }
-}
-
-/* LJEPŠI AMPERSAND IZMEĐU IMENA */
-.names .amp {
-    font-family: "Cormorant Garamond", serif;
-    font-style: italic;
-    font-weight: 500;
-    letter-spacing: 0;
-    opacity: 0.8;
-    position: relative;
-    top: 1px;
 }

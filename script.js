@@ -1,5 +1,6 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
+
 const envelope = document.getElementById("envelope");
 const invitationWrap = document.getElementById("invitationWrap");
 
@@ -9,7 +10,6 @@ const centerInfo = document.getElementById("centerInfo");
 
 const odgovorInput = document.getElementById("odgovor");
 const submitBtn = document.getElementById("submitBtn");
-
 const rsvpButtons = document.getElementById("rsvpButtons");
 const choiceButtons = document.querySelectorAll(".choice");
 
@@ -28,21 +28,19 @@ function setConfirmMessage(msg) {
 }
 
 function showBlocked(msg) {
-    if (form) form.style.display = "none";
-    if (rsvpButtons) rsvpButtons.style.display = "none";
-    if (submitBtn) submitBtn.classList.add("hidden");
-    if (centerInfo) centerInfo.style.display = "block";
+    form.style.display = "none";
+    rsvpButtons.style.display = "none";
+    submitBtn.classList.add("hidden");
+    centerInfo.style.display = "block";
     setConfirmMessage(msg);
 }
 
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
-    // maxGuests = 1 -> ne prikazuj ništa, automatski 1
     if (!Number.isFinite(mg) || mg <= 1) {
         brojOsobaEl.style.display = "none";
         brojOsobaEl.innerHTML = "";
-
         const opt1 = document.createElement("option");
         opt1.value = "1";
         opt1.textContent = "1";
@@ -51,17 +49,14 @@ function setupBrojOsoba(maxGuests) {
         return;
     }
 
-    // maxGuests >= 2 -> prikaži dropdown 1..mg
     brojOsobaEl.style.display = "block";
     brojOsobaEl.innerHTML = "";
-
     for (let i = 1; i <= mg; i++) {
         const opt = document.createElement("option");
         opt.value = String(i);
         opt.textContent = String(i);
         brojOsobaEl.appendChild(opt);
     }
-
     brojOsobaEl.value = "1";
 }
 
@@ -77,16 +72,8 @@ async function validateTokenAndSetup() {
 
     try {
         const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
-        const res = await fetch(url, { method: "GET" });
-
-        const text = await res.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            showBlocked("Greška pri provjeri linka. Provjeri Web App access = Anyone.");
-            return;
-        }
+        const res = await fetch(url);
+        const data = await res.json();
 
         if (!data.ok) {
             showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
@@ -105,17 +92,15 @@ async function validateTokenAndSetup() {
 
         setupBrojOsoba(data.maxGuests);
 
-        // forma treba da bude vidljiva
         form.style.display = "flex";
         setConfirmMessage("Molimo vas da potvrdite dolazak");
-
     } catch (e) {
         showBlocked("Došlo je do greške. Pokušajte ponovo kasnije.");
     }
 }
 
 /* klik -> koverta sklizne lijevo + pokaži pozivnicu */
-envelope?.addEventListener("click", () => {
+envelope.addEventListener("click", () => {
     envelope.classList.add("open");
     setTimeout(() => {
         envelope.style.display = "none";
@@ -133,7 +118,7 @@ choiceButtons.forEach((btn) => {
 });
 
 /* slanje (FormData) */
-form?.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const broj = (brojOsobaEl.style.display === "none") ? "1" : brojOsobaEl.value;
@@ -145,12 +130,9 @@ form?.addEventListener("submit", async (e) => {
     formData.append("brojOsoba", broj);
 
     try {
-        const res = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: formData
-        });
-
+        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
         const text = await res.text();
+
         let data = { ok: true };
         try { data = JSON.parse(text); } catch { }
 
@@ -164,7 +146,6 @@ form?.addEventListener("submit", async (e) => {
 
         thankYou.classList.remove("hidden");
         thankYou.classList.add("show");
-
     } catch (err) {
         setConfirmMessage("Greška pri slanju. Pokušajte ponovo.");
     }
