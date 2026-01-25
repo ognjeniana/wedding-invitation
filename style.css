@@ -21,7 +21,7 @@ body {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* sve centrirano */
@@ -65,10 +65,12 @@ body {
     display: none;
     width: 100%;
     justify-content: center;
+    pointer-events: none;
 }
 
 .invitation-wrap.show {
     display: flex;
+    pointer-events: auto;
     animation: fadeIn .8s ease forwards;
 }
 
@@ -223,6 +225,11 @@ body {
 }
 
 /* ================== RSVP ================== */
+/* sakrij formu dok JS ne potvrdi token */
+#rsvpForm {
+    display: none;
+}
+
 .rsvp {
     width: min(360px, 100%);
     margin: 16px auto 0;

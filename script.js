@@ -1,4 +1,4 @@
-// 1) OVDJE UPIŠI TVOJ TAČAN /exec LINK
+// 1) OVDJE UPIŠI TVOJ TAČAN /exec LINK (Google Apps Script Web App)
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
 const envelope = document.getElementById("envelope");
@@ -27,11 +27,8 @@ function setConfirmMessage(msg) {
 }
 
 function showBlocked(msg) {
-    // sakrij formu i dugmad
     if (form) form.style.display = "none";
     if (rsvpButtons) rsvpButtons.style.display = "none";
-
-    // prikaži samo poruku
     if (centerInfo) centerInfo.style.display = "block";
     setConfirmMessage(msg);
 }
@@ -39,11 +36,9 @@ function showBlocked(msg) {
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
-    // maxGuests <= 1 -> ne prikazuj dropdown, automatski 1
     if (!Number.isFinite(mg) || mg <= 1) {
         brojOsobaEl.style.display = "none";
         brojOsobaEl.innerHTML = "";
-
         const opt1 = document.createElement("option");
         opt1.value = "1";
         opt1.textContent = "1";
@@ -52,7 +47,6 @@ function setupBrojOsoba(maxGuests) {
         return;
     }
 
-    // maxGuests >= 2 -> prikaži dropdown 1..mg
     brojOsobaEl.style.display = "block";
     brojOsobaEl.innerHTML = "";
 
@@ -62,7 +56,6 @@ function setupBrojOsoba(maxGuests) {
         opt.textContent = String(i);
         brojOsobaEl.appendChild(opt);
     }
-
     brojOsobaEl.value = "1";
 }
 
@@ -79,10 +72,9 @@ async function validateTokenAndSetup() {
     try {
         const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
         const res = await fetch(url);
-
         const text = await res.text();
-        let data;
 
+        let data;
         try {
             data = JSON.parse(text);
         } catch {
@@ -129,31 +121,47 @@ envelope?.addEventListener("click", () => {
 
 /* Klik na Dolazim/Ne dolazim -> ODMAH šalje */
 choiceButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         const odgovor = btn.dataset.value;
         odgovorInput.value = odgovor;
 
-        // disable dugmad odmah da ne klikću više puta
-        choiceButtons.forEach(b => b.disabled = true);
+        // disable odmah
+        choiceButtons.forEach((b) => (b.disabled = true));
 
-        const broj = (brojOsobaEl.style.display === "none") ? "1" : brojOsobaEl.value;
+        const broj =
+            (brojOsobaEl.style.display === "none" || getComputedStyle(brojOsobaEl).display === "none")
+                ? "1"
+                : (brojOsobaEl.value || "1");
 
-        const formData = new FormData();
-        formData.append("token", tokenInput.value);
-        formData.append("fullName", nameInput.value);
-        formData.append("odgovor", odgovor);
-        formData.append("brojOsoba", broj);
+        const body = new URLSearchParams();
+        body.set("token", tokenInput.value);
+        body.set("fullName", nameInput.value);
+        body.set("odgovor", odgovor);
+        body.set("brojOsoba", broj);
 
         try {
-            const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
+            const res = await fetch(SCRIPT_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+                body: body.toString(),
+            });
 
             const text = await res.text();
-            let data = { ok: true };
+            let data = null;
             try { data = JSON.parse(text); } catch { }
 
+            if (!data) {
+                console.log("POST RESPONSE (not JSON):", text);
+                choiceButtons.forEach((b) => (b.disabled = false));
+                setConfirmMessage("Greška: server nije vratio JSON odgovor.");
+                return;
+            }
+
             if (!data.ok) {
-                // vrati dugmad ako je greška (npr. već poslato)
-                choiceButtons.forEach(b => b.disabled = false);
+                choiceButtons.forEach((b) => (b.disabled = false));
                 setConfirmMessage(data.error || "Greška pri slanju.");
                 return;
             }
@@ -163,18 +171,17 @@ choiceButtons.forEach((btn) => {
             centerInfo.style.display = "none";
 
             // poruka zavisi od izbora
-            if (odgovor === "Dolazim") {
-                thankYou.textContent = "Hvala vam na odgovoru. Radujemo se vašem dolasku.";
-            } else {
-                thankYou.textContent = "Žao nam je što nećete moći prisustvovati.";
-            }
+            thankYou.textContent =
+                (odgovor === "Dolazim")
+                    ? "Hvala vam na odgovoru. Radujemo se vašem dolasku."
+                    : "Žao nam je što nećete moći prisustvovati.";
 
             thankYou.classList.remove("hidden");
             thankYou.classList.add("show");
 
         } catch (err) {
             console.log("POST ERROR:", err);
-            choiceButtons.forEach(b => b.disabled = false);
+            choiceButtons.forEach((b) => (b.disabled = false));
             setConfirmMessage("Greška pri slanju. Pokušajte ponovo.");
         }
     });
