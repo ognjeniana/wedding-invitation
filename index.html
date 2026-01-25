@@ -4,137 +4,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pozivnica</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
-        rel="stylesheet">
+    <title>Ana i Ognjen – Pozivnica</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <div class="background">
-
-        <!-- KOVERAT = SLIKA -->
-        <button class="envelope-photo" id="envelope" aria-label="Otvori pozivnicu"></button>
-
-        <!-- POZIVNICA -->
-        <div class="invitation-wrap" id="invitationWrap">
-            <div class="invitation-card">
-                <div class="paper">
-
-                    <div class="topline">POZIVAMO VAS DA SA NAMA PROSLAVITE</div>
-
-                    <!-- A + RINGS + O -->
-                    <div class="monogram">
-                        <div class="initial">A</div>
-
-                        <div class="rings" aria-hidden="true">
-                            <svg viewBox="0 0 140 140" class="rings-svg">
-                                <defs>
-                                    <radialGradient id="gold" cx="40%" cy="35%" r="70%">
-                                        <stop offset="0%" stop-color="#f6e7c6" />
-                                        <stop offset="60%" stop-color="#d7b77a" />
-                                        <stop offset="100%" stop-color="#b58a4b" />
-                                    </radialGradient>
-                                </defs>
-
-                                <circle cx="60" cy="75" r="28" fill="none" stroke="url(#gold)" stroke-width="8" />
-                                <circle cx="86" cy="75" r="26" fill="none" stroke="url(#gold)" stroke-width="8" />
-                                <polygon points="60,34 68,44 60,54 52,44" fill="#f7f3ed" stroke="#c9a76a"
-                                    stroke-width="2" />
-                            </svg>
-                        </div>
-
-                        <div class="initial">O</div>
-                    </div>
-
-                    <div class="names">
-                        <span class="nm">ANA</span>
-                        <span class="amp">&amp;</span>
-                        <span class="nm">OGNJEN</span>
-                    </div>
-
-                    <!-- DATUM BLOK -->
-                    <div class="date-row">
-                        <div class="date-box">
-                            <div class="label">SUBOTA</div>
-                            <div class="line"></div>
-                        </div>
-
-                        <div class="date-center">
-                            <div class="month">APRIL</div>
-                            <div class="day">18</div>
-                            <div class="year">2026</div>
-                        </div>
-
-                        <div class="date-box">
-                            <div class="label">PRIJEM GOSTIJU</div>
-                            <div class="line"></div>
-                            <div class="sub">14:30 – 15:30 h</div>
-                        </div>
-                    </div>
-
-                    <!-- LOKACIJA -->
-                    <div class="center-info" id="centerInfo">
-                        <div class="place">SALA PRINCESS</div>
-                        <div class="addr">VALDANOS · ULCINJ</div>
-                        <div class="place-line"></div>
-                        <div class="confirm">Molimo vas da potvrdite dolazak</div>
-                    </div>
-
-                    <!-- RSVP -->
-                   <form id="rsvpForm" class="rsvp">
-  <input type="text" name="ime" placeholder="Ime i prezime" required>
-  <input type="hidden" name="odgovor" id="odgovor" required>
-
-  <select name="brojOsoba" id="brojOsoba" required></select>
-  <input type="hidden" name="token" id="token">
-
-  <div class="rsvp-buttons" id="rsvpButtons">
-    <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
-    <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
-  </div>
-
-  <button type="submit" class="submit hidden" id="submitBtn">Pošalji odgovor</button>
-</form>
-
-                            <input type="hidden" name="token" id="token">
-
-                            <div class="rsvp-buttons" id="rsvpButtons">
-                                <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
-                                <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
-                            </div>
-
-                            <button type="submit" class="submit hidden" id="submitBtn">Pošalji odgovor</button>
-                        </form>
-
-                        <input type="hidden" name="token" id="token">
-
-                        <div class="rsvp-buttons" id="rsvpButtons">
-                            <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
-                            <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
-                        </div>
-
-                        <button type="submit" class="submit hidden" id="submitBtn">Pošalji odgovor</button>
-                    </form>
-
-                    <div class="thank-you hidden" id="thankYou">
-                        Hvala vam na odgovoru. Radujemo se vašem dolasku.
-                    </div>
-
-                </div>
-            </div>
+    <!-- KOVERAT -->
+    <div class="envelope-wrapper">
+        <div id="envelope" class="envelope">
+            <!-- ovdje ide slika koverte preko CSS-a -->
         </div>
+    </div>
 
+    <!-- POZIVNICA -->
+    <div id="invitationWrap" class="invitation-wrap">
+
+        <div class="invitation">
+
+            <!-- IMENA -->
+            <h1 class="names">Ana &amp; Ognjen</h1>
+
+            <!-- TEKST -->
+            <div class="text">
+                <p>Pozivamo vas da sa nama proslavite</p>
+                <h2>Naše vjenčanje</h2>
+
+                <p class="date">
+                    Subota, 18.04.2026.<br>
+                    Prijem gostiju od 14:30h do 15:30h
+                </p>
+
+                <p class="location">
+                    Sala Princess, Valdanos<br>
+                    Ulcinj
+                </p>
+            </div>
+
+            <!-- CENTRALNA INFO / PORUKE -->
+            <div id="centerInfo" class="center-info">
+                <p class="confirm">Molimo vas da potvrdite dolazak</p>
+            </div>
+
+            <!-- RSVP -->
+            <form id="rsvpForm" class="rsvp">
+                <input type="text" name="ime" placeholder="Ime i prezime" required>
+
+                <input type="hidden" name="odgovor" id="odgovor" required>
+                <input type="hidden" name="token" id="token">
+
+                <select name="brojOsoba" id="brojOsoba" required></select>
+
+                <div class="rsvp-buttons" id="rsvpButtons">
+                    <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
+                    <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
+                </div>
+
+                <button type="submit" class="submit hidden" id="submitBtn">
+                    Pošalji odgovor
+                </button>
+            </form>
+
+            <!-- HVALA -->
+            <div class="thank-you hidden" id="thankYou">
+                Hvala vam na odgovoru. Radujemo se vašem dolasku.
+            </div>
+
+        </div>
     </div>
 
     <script src="script.js"></script>
 </body>
-
 
 </html>
