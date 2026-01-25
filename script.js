@@ -9,12 +9,12 @@ const centerInfo = document.getElementById("centerInfo");
 
 const odgovorInput = document.getElementById("odgovor");
 const submitBtn = document.getElementById("submitBtn");
+
 const rsvpButtons = document.getElementById("rsvpButtons");
 const choiceButtons = document.querySelectorAll(".choice");
 
 const tokenInput = document.getElementById("token");
 const brojOsobaEl = document.getElementById("brojOsoba");
-const koDolaziEl = document.getElementById("koDolazi");
 const nameInput = form.querySelector('input[name="ime"]');
 
 function getTokenFromUrl() {
@@ -35,14 +35,34 @@ function showBlocked(msg) {
     setConfirmMessage(msg);
 }
 
-function fillGuestsSelect(maxGuests) {
+function setupBrojOsoba(maxGuests) {
+    const mg = Number(maxGuests || 1);
+
+    // maxGuests = 1 -> ne prikazuj ništa, automatski 1
+    if (!Number.isFinite(mg) || mg <= 1) {
+        brojOsobaEl.style.display = "none";
+        brojOsobaEl.innerHTML = "";
+
+        const opt1 = document.createElement("option");
+        opt1.value = "1";
+        opt1.textContent = "1";
+        brojOsobaEl.appendChild(opt1);
+        brojOsobaEl.value = "1";
+        return;
+    }
+
+    // maxGuests >= 2 -> prikaži dropdown 1..mg
+    brojOsobaEl.style.display = "block";
     brojOsobaEl.innerHTML = "";
-    for (let i = 1; i <= maxGuests; i++) {
+
+    for (let i = 1; i <= mg; i++) {
         const opt = document.createElement("option");
         opt.value = String(i);
         opt.textContent = String(i);
         brojOsobaEl.appendChild(opt);
     }
+
+    brojOsobaEl.value = "1";
 }
 
 async function validateTokenAndSetup() {
@@ -56,18 +76,15 @@ async function validateTokenAndSetup() {
     tokenInput.value = t;
 
     try {
-        // cache-buster da ne kešira odgovor
         const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
-
         const res = await fetch(url, { method: "GET" });
-        const text = await res.text();
 
+        const text = await res.text();
         let data;
         try {
             data = JSON.parse(text);
         } catch {
-            // ako nije JSON, znači Apps Script vraća HTML (permission ili error)
-            showBlocked("Greška pri provjeri linka (nije JSON). Provjeri da je Web App access = Anyone.");
+            showBlocked("Greška pri provjeri linka. Provjeri Web App access = Anyone.");
             return;
         }
 
@@ -86,10 +103,9 @@ async function validateTokenAndSetup() {
             nameInput.readOnly = true;
         }
 
-        const maxGuests = Number(data.maxGuests || 1);
-        fillGuestsSelect(Number.isFinite(maxGuests) && maxGuests >= 1 ? maxGuests : 1);
+        setupBrojOsoba(data.maxGuests);
 
-        // ako je sve OK, forma treba da bude vidljiva
+        // forma treba da bude vidljiva
         form.style.display = "flex";
         setConfirmMessage("Molimo vas da potvrdite dolazak");
 
@@ -116,16 +132,17 @@ choiceButtons.forEach((btn) => {
     });
 });
 
-/* slanje (FormData -> bez JSON headera -> nema preflight) */
+/* slanje (FormData) */
 form?.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const broj = (brojOsobaEl.style.display === "none") ? "1" : brojOsobaEl.value;
 
     const formData = new FormData();
     formData.append("token", tokenInput.value);
     formData.append("fullName", nameInput.value);
     formData.append("odgovor", odgovorInput.value);
-    formData.append("brojOsoba", brojOsobaEl.value);
-    formData.append("koDolazi", koDolaziEl.value);
+    formData.append("brojOsoba", broj);
 
     try {
         const res = await fetch(SCRIPT_URL, {
@@ -134,15 +151,8 @@ form?.addEventListener("submit", async (e) => {
         });
 
         const text = await res.text();
-        let data;
-
-        try {
-            data = JSON.parse(text);
-        } catch {
-            // čak i ako ne vrati JSON, mi možemo tretirati kao uspjeh
-            // ali bolje je da vraća JSON - tvoj Apps Script vraća JSON.
-            data = { ok: true };
-        }
+        let data = { ok: true };
+        try { data = JSON.parse(text); } catch { }
 
         if (!data.ok) {
             setConfirmMessage(data.error || "Greška pri slanju.");
@@ -160,5 +170,4 @@ form?.addEventListener("submit", async (e) => {
     }
 });
 
-/* validacija tokena odmah na učitavanje */
 validateTokenAndSetup();

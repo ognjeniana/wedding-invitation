@@ -92,7 +92,21 @@
                         <input type="text" name="ime" placeholder="Ime i prezime" required>
                         <input type="hidden" name="odgovor" id="odgovor" required>
                         <select name="brojOsoba" id="brojOsoba" required></select>
-                        <input type="text" name="koDolazi" id="koDolazi" placeholder="Ko dolazi s vama? (opciono)">
+                        <form id="rsvpForm" class="rsvp">
+                            <input type="text" name="ime" placeholder="Ime i prezime" required>
+                            <input type="hidden" name="odgovor" id="odgovor" required>
+
+                            <select name="brojOsoba" id="brojOsoba" required></select>
+                            <input type="hidden" name="token" id="token">
+
+                            <div class="rsvp-buttons" id="rsvpButtons">
+                                <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
+                                <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
+                            </div>
+
+                            <button type="submit" class="submit hidden" id="submitBtn">Pošalji odgovor</button>
+                        </form>
+
                         <input type="hidden" name="token" id="token">
 
                         <div class="rsvp-buttons" id="rsvpButtons">
