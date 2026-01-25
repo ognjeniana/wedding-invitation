@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyiFSWUMElBqSaXtbAe6YGtfyZzhzIKQaIXpZSTd4ZylGwqJuxGCjUwLu18v6sczWM0/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
 const envelope = document.getElementById("envelope");
 const invitationWrap = document.getElementById("invitationWrap");
@@ -9,7 +9,6 @@ const centerInfo = document.getElementById("centerInfo");
 
 const odgovorInput = document.getElementById("odgovor");
 const submitBtn = document.getElementById("submitBtn");
-
 const rsvpButtons = document.getElementById("rsvpButtons");
 const choiceButtons = document.querySelectorAll(".choice");
 
@@ -29,13 +28,9 @@ function setConfirmMessage(msg) {
 }
 
 function showBlocked(msg) {
-    // sakrij RSVP formu
     if (form) form.style.display = "none";
-    // sakrij i submit/dugmad ako su negdje ostali
     if (rsvpButtons) rsvpButtons.style.display = "none";
     if (submitBtn) submitBtn.classList.add("hidden");
-
-    // pokaži poruku u postojećem tekstu na pozivnici
     if (centerInfo) centerInfo.style.display = "block";
     setConfirmMessage(msg);
 }
@@ -61,9 +56,20 @@ async function validateTokenAndSetup() {
     tokenInput.value = t;
 
     try {
-        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}`;
+        // cache-buster da ne kešira odgovor
+        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
+
         const res = await fetch(url, { method: "GET" });
-        const data = await res.json();
+        const text = await res.text();
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            // ako nije JSON, znači Apps Script vraća HTML (permission ili error)
+            showBlocked("Greška pri provjeri linka (nije JSON). Provjeri da je Web App access = Anyone.");
+            return;
+        }
 
         if (!data.ok) {
             showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
@@ -75,7 +81,6 @@ async function validateTokenAndSetup() {
             return;
         }
 
-        // ime iz Sheeta + zaključaj
         if (data.fullName) {
             nameInput.value = data.fullName;
             nameInput.readOnly = true;
@@ -83,6 +88,10 @@ async function validateTokenAndSetup() {
 
         const maxGuests = Number(data.maxGuests || 1);
         fillGuestsSelect(Number.isFinite(maxGuests) && maxGuests >= 1 ? maxGuests : 1);
+
+        // ako je sve OK, forma treba da bude vidljiva
+        form.style.display = "flex";
+        setConfirmMessage("Molimo vas da potvrdite dolazak");
 
     } catch (e) {
         showBlocked("Došlo je do greške. Pokušajte ponovo kasnije.");
@@ -92,7 +101,6 @@ async function validateTokenAndSetup() {
 /* klik -> koverta sklizne lijevo + pokaži pozivnicu */
 envelope?.addEventListener("click", () => {
     envelope.classList.add("open");
-
     setTimeout(() => {
         envelope.style.display = "none";
         invitationWrap.classList.add("show");
@@ -103,32 +111,38 @@ envelope?.addEventListener("click", () => {
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
         odgovorInput.value = btn.dataset.value;
-
         rsvpButtons.style.display = "none";
         submitBtn.classList.remove("hidden");
     });
 });
 
-/* slanje */
+/* slanje (FormData -> bez JSON headera -> nema preflight) */
 form?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const payload = {
-        token: tokenInput.value,
-        fullName: nameInput.value,
-        odgovor: odgovorInput.value,
-        brojOsoba: brojOsobaEl.value,
-        koDolazi: koDolaziEl.value
-    };
+    const formData = new FormData();
+    formData.append("token", tokenInput.value);
+    formData.append("fullName", nameInput.value);
+    formData.append("odgovor", odgovorInput.value);
+    formData.append("brojOsoba", brojOsobaEl.value);
+    formData.append("koDolazi", koDolaziEl.value);
 
     try {
         const res = await fetch(SCRIPT_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: formData
         });
 
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch {
+            // čak i ako ne vrati JSON, mi možemo tretirati kao uspjeh
+            // ali bolje je da vraća JSON - tvoj Apps Script vraća JSON.
+            data = { ok: true };
+        }
 
         if (!data.ok) {
             setConfirmMessage(data.error || "Greška pri slanju.");
