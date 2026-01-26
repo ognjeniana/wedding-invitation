@@ -18,9 +18,10 @@
 <body>
     <main class="page">
 
-
+        <!-- KOVERAT -->
         <button class="envelope-photo" id="envelope" aria-label="Otvori pozivnicu"></button>
 
+        <!-- POZIVNICA -->
         <div class="invitation-wrap" id="invitationWrap">
             <div class="invitation-card">
                 <div class="paper">
@@ -57,34 +58,32 @@
                         <div class="place">SALA PRINCESS</div>
                         <div class="addr">VALDANOS · ULCINJ</div>
                         <div class="place-line"></div>
-                        <div class="confirm">
-                            Molimo Vas da nam potvrdite dolazak do 30.03.2026.
-                        </div>
-
-
-
-                        <form id="rsvpForm" class="rsvp">
-                            <input type="text" name="ime" placeholder="Ime i prezime" required>
-
-                            <input type="hidden" name="odgovor" id="odgovor" required>
-                            <input type="hidden" name="token" id="token" required>
-
-                            <!-- broj gostiju: hidden + checklist -->
-                            <input type="hidden" name="brojOsoba" id="brojOsoba" required value="1">
-                            <div class="guest-pick" id="guestPick" aria-label="Broj gostiju"></div>
-
-                            <div class="rsvp-buttons" id="rsvpButtons">
-                                <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
-                                <button type="button" class="choice negative" data-value="Ne dolazim">NISAM U
-                                    MOGUĆNOSTI</button>
-                            </div>
-                        </form>
-
-                        <div class="thank-you hidden" id="thankYou"></div>
-
+                        <div class="confirm">Molimo Vas da nam potvrdite dolazak do 30.03.2026.</div>
                     </div>
+
+                    <!-- RSVP -->
+                    <form id="rsvpForm" class="rsvp">
+                        <input type="text" name="ime" placeholder="Ime i prezime" required>
+
+                        <input type="hidden" name="odgovor" id="odgovor" required>
+                        <input type="hidden" name="token" id="token" required>
+
+                        <!-- broj gostiju: hidden + checklist -->
+                        <input type="hidden" name="brojOsoba" id="brojOsoba" required value="1">
+                        <div class="guest-pick" id="guestPick" aria-label="Broj gostiju"></div>
+
+                        <div class="rsvp-buttons" id="rsvpButtons">
+                            <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
+                            <button type="button" class="choice negative" data-value="Ne dolazim">NISAM U
+                                MOGUĆNOSTI</button>
+                        </div>
+                    </form>
+
+                    <div class="thank-you hidden" id="thankYou"></div>
+
                 </div>
             </div>
+        </div>
 
     </main>
 

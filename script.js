@@ -1,7 +1,8 @@
-
+// 1) OVDJE UPIŠI TVOJ TAČAN /exec LINK (Google Apps Script Web App)
 const SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
+// ===== ELEMENTI =====
 const envelope = document.getElementById("envelope");
 const invitationWrap = document.getElementById("invitationWrap");
 
@@ -12,7 +13,7 @@ const centerInfo = document.getElementById("centerInfo");
 const odgovorInput = document.getElementById("odgovor");
 const tokenInput = document.getElementById("token");
 
-const brojOsobaEl = document.getElementById("brojOsoba");
+const brojOsobaEl = document.getElementById("brojOsoba"); // hidden
 const guestPick = document.getElementById("guestPick");
 
 const choiceButtons = document.querySelectorAll(".choice");
@@ -21,6 +22,7 @@ const negativeBtn = document.querySelector('.choice[data-value="Ne dolazim"]');
 
 const nameInput = form ? form.querySelector('input[name="ime"]') : null;
 
+// ===== HELPERS =====
 function getTokenFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return (params.get("t") || "").trim();
@@ -30,6 +32,9 @@ function setConfirmMessage(msg) {
     const confirm = centerInfo?.querySelector(".confirm");
     if (confirm) confirm.textContent = msg;
 }
+
+const CONFIRM_TEXT = "Molimo Vas da nam potvrdite dolazak do 30.03.2026.";
+setConfirmMessage(CONFIRM_TEXT);
 
 function showBlocked(msg) {
     if (form) form.style.display = "none";
@@ -46,10 +51,6 @@ function updateButtonTexts(guestCount) {
     if (positiveBtn) positiveBtn.textContent = n > 1 ? "DOLAZIMO" : "DOLAZIM";
     if (negativeBtn) negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
 }
-
-
-setConfirmMessage("Molimo Vas da nam potvrdite dolazak do 30.03.2026.");
-
 
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
@@ -92,6 +93,7 @@ function setupBrojOsoba(maxGuests) {
     }
 }
 
+// ===== VALIDACIJA TOKENA =====
 async function validateTokenAndSetup() {
     const t = getTokenFromUrl();
 
@@ -100,13 +102,21 @@ async function validateTokenAndSetup() {
         return;
     }
 
-    tokenInput.value = t;
+    if (tokenInput) tokenInput.value = t;
 
     try {
         const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
         const res = await fetch(url);
         const text = await res.text();
-        const data = JSON.parse(text);
+
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            console.log("VALIDATE RESPONSE (not JSON):", text);
+            showBlocked("Greška: provjera linka ne radi (pogrešan /exec link ili Web App access).");
+            return;
+        }
 
         if (!data.ok) {
             showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
@@ -124,14 +134,17 @@ async function validateTokenAndSetup() {
         }
 
         setupBrojOsoba(data.maxGuests);
-        form.style.display = "flex";
 
-    } catch {
-        showBlocked("Došlo je do greške. Pokušajte ponovo kasnije.");
+        if (form) form.style.display = "flex";
+        // confirm tekst ostaje isti (CONFIRM_TEXT)
+        setConfirmMessage(CONFIRM_TEXT);
+    } catch (e) {
+        console.log("VALIDATE ERROR:", e);
+        showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
     }
 }
 
-
+// ===== ANIMACIJA KOVERTE =====
 envelope?.addEventListener("click", () => {
     envelope.classList.add("open");
     setTimeout(() => {
@@ -140,55 +153,74 @@ envelope?.addEventListener("click", () => {
     }, 760);
 });
 
-
+// ===== SLANJE ODGOVORA (INSTANT + MINI SPINNER) =====
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
-        const odgovor = btn.dataset.value;
-        odgovorInput.value = odgovor;
+        const odgovor = btn.dataset.value || "";
+        if (odgovorInput) odgovorInput.value = odgovor;
 
         const originalText = btn.textContent;
+
+        // mini spinner na kliknutom dugmetu
         btn.textContent = "⏳";
         choiceButtons.forEach((b) => (b.disabled = true));
 
-        form.style.display = "none";
-        centerInfo.style.display = "none";
+        // instant prikaz poruke
+        if (form) form.style.display = "none";
+        if (centerInfo) centerInfo.style.display = "none";
 
-        thankYou.textContent =
-            odgovor === "Dolazim"
-                ? "Hvala Vam na odgovoru. Radujemo se Vašem dolasku."
-                : "Hvala Vam na odgovoru. Žao nam je što nećete biti u mogućnosti da prisustvujete.";
-        thankYou.classList.remove("hidden");
-        thankYou.classList.add("show");
+        if (thankYou) {
+            thankYou.textContent =
+                (odgovor === "Dolazim")
+                    ? "Hvala Vam na odgovoru. Radujemo se Vašem dolasku."
+                    : "Hvala Vam na odgovoru. Žao nam je što nećete biti u mogućnosti da prisustvujete.";
+            thankYou.classList.remove("hidden");
+            thankYou.classList.add("show");
+        }
 
-        const body = new URLSearchParams({
-            token: tokenInput.value,
-            fullName: nameInput?.value || "",
-            odgovor,
-            brojOsoba: brojOsobaEl.value || "1",
-        });
+        const body = new URLSearchParams();
+        body.set("token", tokenInput?.value || "");
+        body.set("fullName", nameInput?.value || "");
+        body.set("odgovor", odgovor);
+        body.set("brojOsoba", brojOsobaEl?.value || "1");
 
         try {
             const res = await fetch(SCRIPT_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                body,
+                body: body.toString(),
             });
 
-            const data = JSON.parse(await res.text());
-            if (!data.ok) throw new Error();
+            const text = await res.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch { }
 
-        } catch {
-            thankYou.textContent =
-                "Žao nam je, došlo je do greške. Molimo pokušajte ponovo.";
+            if (!data || !data.ok) throw new Error(data?.error || "Server error");
+
+            // uspjeh: ništa ne diramo, poruka već stoji instant
+
+        } catch (err) {
+            console.log("POST ERROR:", err);
+
+            // vrati UI da može ponovo
+            if (thankYou) {
+                thankYou.classList.add("hidden");
+                thankYou.classList.remove("show");
+            }
+
             btn.textContent = originalText;
-            centerInfo.style.display = "block";
-            form.style.display = "flex";
+            if (centerInfo) centerInfo.style.display = "block";
+            if (form) form.style.display = "flex";
             choiceButtons.forEach((b) => (b.disabled = false));
+
+            setConfirmMessage("Žao nam je, došlo je do greške. Molimo pokušajte ponovo.");
+            setTimeout(() => setConfirmMessage(CONFIRM_TEXT), 3500);
         }
     });
 });
 
-
+// ===== START =====
 validateTokenAndSetup();
