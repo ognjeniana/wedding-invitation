@@ -1,8 +1,7 @@
-// ===== KONFIGURACIJA =====
+
 const SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
-// ===== ELEMENTI =====
 const envelope = document.getElementById("envelope");
 const invitationWrap = document.getElementById("invitationWrap");
 
@@ -22,7 +21,6 @@ const negativeBtn = document.querySelector('.choice[data-value="Ne dolazim"]');
 
 const nameInput = form ? form.querySelector('input[name="ime"]') : null;
 
-// ===== HELPERS =====
 function getTokenFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return (params.get("t") || "").trim();
@@ -49,10 +47,10 @@ function updateButtonTexts(guestCount) {
     if (negativeBtn) negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
 }
 
-// ===== POČETNI TEKST (PRIJE FORME) =====
+
 setConfirmMessage("Molimo Vas da nam potvrdite dolazak do 30.03.2026.");
 
-// ===== BROJ GOSTIJU =====
+
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
@@ -94,7 +92,6 @@ function setupBrojOsoba(maxGuests) {
     }
 }
 
-// ===== VALIDACIJA TOKENA =====
 async function validateTokenAndSetup() {
     const t = getTokenFromUrl();
 
@@ -103,20 +100,13 @@ async function validateTokenAndSetup() {
         return;
     }
 
-    if (tokenInput) tokenInput.value = t;
+    tokenInput.value = t;
 
     try {
         const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
         const res = await fetch(url);
         const text = await res.text();
-
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch {
-            showBlocked("Greška pri provjeri linka.");
-            return;
-        }
+        const data = JSON.parse(text);
 
         if (!data.ok) {
             showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
@@ -134,15 +124,14 @@ async function validateTokenAndSetup() {
         }
 
         setupBrojOsoba(data.maxGuests);
+        form.style.display = "flex";
 
-        if (form) form.style.display = "flex";
-
-    } catch (e) {
+    } catch {
         showBlocked("Došlo je do greške. Pokušajte ponovo kasnije.");
     }
 }
 
-// ===== ANIMACIJA KOVERTE =====
+
 envelope?.addEventListener("click", () => {
     envelope.classList.add("open");
     setTimeout(() => {
@@ -151,58 +140,55 @@ envelope?.addEventListener("click", () => {
     }, 760);
 });
 
-// ===== SLANJE ODGOVORA =====
+
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
-        e.stopPropagation();
 
-        const odgovor = btn.dataset.value || "";
-        if (odgovorInput) odgovorInput.value = odgovor;
+        const odgovor = btn.dataset.value;
+        odgovorInput.value = odgovor;
 
+        const originalText = btn.textContent;
+        btn.textContent = "⏳";
         choiceButtons.forEach((b) => (b.disabled = true));
 
-        const body = new URLSearchParams();
-        body.set("token", tokenInput.value);
-        body.set("fullName", nameInput?.value || "");
-        body.set("odgovor", odgovor);
-        body.set("brojOsoba", brojOsobaEl?.value || "1");
+        form.style.display = "none";
+        centerInfo.style.display = "none";
+
+        thankYou.textContent =
+            odgovor === "Dolazim"
+                ? "Hvala Vam na odgovoru. Radujemo se Vašem dolasku."
+                : "Hvala Vam na odgovoru. Žao nam je što nećete biti u mogućnosti da prisustvujete.";
+        thankYou.classList.remove("hidden");
+        thankYou.classList.add("show");
+
+        const body = new URLSearchParams({
+            token: tokenInput.value,
+            fullName: nameInput?.value || "",
+            odgovor,
+            brojOsoba: brojOsobaEl.value || "1",
+        });
 
         try {
             const res = await fetch(SCRIPT_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                body: body.toString(),
+                body,
             });
 
-            const text = await res.text();
-            let data = null;
-            try { data = JSON.parse(text); } catch { }
-
-            if (!data || !data.ok) {
-                choiceButtons.forEach((b) => (b.disabled = false));
-                setConfirmMessage("Greška pri slanju.");
-                return;
-            }
-
-            if (form) form.style.display = "none";
-            if (centerInfo) centerInfo.style.display = "none";
-
-            if (thankYou) {
-                thankYou.textContent =
-                    odgovor === "Dolazim"
-                        ? "Hvala vam na odgovoru. Radujemo se vašem dolasku."
-                        : "Hvala vam na odgovoru. Razumijemo i šaljemo zagrljaj.";
-                thankYou.classList.remove("hidden");
-                thankYou.classList.add("show");
-            }
+            const data = JSON.parse(await res.text());
+            if (!data.ok) throw new Error();
 
         } catch {
+            thankYou.textContent =
+                "Žao nam je, došlo je do greške. Molimo pokušajte ponovo.";
+            btn.textContent = originalText;
+            centerInfo.style.display = "block";
+            form.style.display = "flex";
             choiceButtons.forEach((b) => (b.disabled = false));
-            setConfirmMessage("Greška pri slanju. Pokušajte ponovo.");
         }
     });
 });
 
-// ===== START =====
+
 validateTokenAndSetup();

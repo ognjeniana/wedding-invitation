@@ -1,5 +1,5 @@
 :root {
-    /* SVJETLIJA blago-roza “paper” nijansa */
+
     --paper: #fdf6f6;
 
 
@@ -27,7 +27,7 @@ body {
     display: none !important;
 }
 
-/* sve centrirano */
+
 .page {
     min-height: 100vh;
     display: flex;
@@ -38,7 +38,7 @@ body {
     padding: 28px 16px;
 }
 
-/* ================== KOVERAT ================== */
+
 .envelope-photo {
     width: 360px;
     height: 560px;
@@ -63,7 +63,7 @@ body {
     }
 }
 
-/* ================== POZIVNICA ================== */
+
 .invitation-wrap {
     display: none;
     width: 100%;
@@ -103,7 +103,7 @@ body {
     text-align: center;
 }
 
-/* ================== TEKST ================== */
+
 .topline {
     letter-spacing: .20em;
     font-size: 12px;
@@ -111,7 +111,7 @@ body {
     margin-bottom: 6px;
 }
 
-/* “NAŠ POSEBAN DAN” identično topline */
+
 .top-sub {
     letter-spacing: .20em;
     font-size: 12px;
@@ -126,7 +126,7 @@ body {
     letter-spacing: .18em;
     font-family: "Playfair Display", serif;
 
-    /* MALO MEKŠE, ne “crno” */
+
     color: var(--ink-soft);
 }
 
@@ -141,7 +141,7 @@ body {
     margin: 0 10px;
 }
 
-/* datum + linije */
+
 .date-row {
     margin: 22px auto 14px;
     width: min(440px, 100%);
@@ -203,7 +203,7 @@ body {
     text-transform: uppercase;
 }
 
-/* sala + adresa: naglašeni ISTO, kao set */
+
 .center-info {
     margin: 18px 0 6px;
     text-align: center;
@@ -226,7 +226,7 @@ body {
     margin-top: 6px;
     font-size: 13px;
     opacity: 1;
-    /* uklonjeno “fade”, da bude naglašenije */
+
 }
 
 .place-line {
@@ -243,8 +243,7 @@ body {
     color: #3a3a3a;
 }
 
-/* ================== RSVP ================== */
-/* sakrij formu dok JS ne potvrdi token */
+
 #rsvpForm {
     display: none;
 }
@@ -267,7 +266,7 @@ body {
     outline: none;
 }
 
-/* centriraj “Ime i prezime” */
+
 .rsvp input[name="ime"] {
     text-align: center;
 }
@@ -276,7 +275,7 @@ body {
     text-align: center;
 }
 
-/* checklist (bez srca) */
+
 .guest-pick {
     display: none;
     /* JS uključuje kad maxGuests > 1 */
@@ -325,7 +324,7 @@ body {
     transform: translate(-50%, -50%);
 }
 
-/* checklist tekst: moderniji, manje “klasik”, ali i dalje elegantno */
+
 .guest-option span {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: .10em;
@@ -334,7 +333,7 @@ body {
     color: var(--ink-soft);
 }
 
-/* buttons */
+
 .rsvp-buttons {
     display: flex;
     gap: 12px;
@@ -365,7 +364,7 @@ body {
     transform: none;
 }
 
-/* ================== HVALA (fade in) ================== */
+
 .thank-you {
     margin-top: 18px;
     font-size: 16px;
