@@ -22,6 +22,9 @@ const negativeBtn = document.querySelector('.choice[data-value="Ne dolazim"]');
 
 const nameInput = form ? form.querySelector('input[name="ime"]') : null;
 
+// ===== TEKST =====
+const CONFIRM_TEXT = "Molimo Vas da nam potvrdite dolazak do 30.03.2026.";
+
 // ===== HELPERS =====
 function getTokenFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -33,12 +36,24 @@ function setConfirmMessage(msg) {
     if (confirm) confirm.textContent = msg;
 }
 
-const CONFIRM_TEXT = "Molimo Vas da nam potvrdite dolazak do 30.03.2026.";
-setConfirmMessage(CONFIRM_TEXT);
+function lockForm(isLocked) {
+    if (!form) return;
+
+    const inputs = form.querySelectorAll("input, button");
+    inputs.forEach((el) => {
+        // ne diramo hidden polja
+        if (el.type === "hidden") return;
+        el.disabled = isLocked;
+    });
+
+    // sigurnost: i .choice posebno
+    choiceButtons.forEach((b) => (b.disabled = isLocked));
+}
 
 function showBlocked(msg) {
     if (form) form.style.display = "none";
     if (guestPick) guestPick.style.display = "none";
+    lockForm(true);
     setConfirmMessage(msg);
 }
 
@@ -91,6 +106,8 @@ function setupBrojOsoba(maxGuests) {
         label.appendChild(span);
         guestPick.appendChild(label);
     }
+
+    updateButtonTexts(brojOsobaEl?.value || "1");
 }
 
 // ===== VALIDACIJA TOKENA =====
@@ -103,6 +120,11 @@ async function validateTokenAndSetup() {
     }
 
     if (tokenInput) tokenInput.value = t;
+
+    // ✅ prikaži formu odmah (zaključanu) da UX djeluje instant
+    if (form) form.style.display = "flex";
+    lockForm(true);
+    setConfirmMessage(CONFIRM_TEXT);
 
     try {
         const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
@@ -135,9 +157,10 @@ async function validateTokenAndSetup() {
 
         setupBrojOsoba(data.maxGuests);
 
-        if (form) form.style.display = "flex";
-        // confirm tekst ostaje isti (CONFIRM_TEXT)
+        // ✅ otključaj kad je sve spremno
+        lockForm(false);
         setConfirmMessage(CONFIRM_TEXT);
+
     } catch (e) {
         console.log("VALIDATE ERROR:", e);
         showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
@@ -223,4 +246,5 @@ choiceButtons.forEach((btn) => {
 });
 
 // ===== START =====
+setConfirmMessage(CONFIRM_TEXT);
 validateTokenAndSetup();
