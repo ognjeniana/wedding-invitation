@@ -406,7 +406,8 @@ body {
 
 /* 1) Paper nijansa: blago roze kao koverta (blaže) */
 :root {
-    --paper: #f6ecec;
+    --paper: #faf1f1;
+
     /* blago roza/bež, nije bijelo */
 }
 
@@ -435,13 +436,4 @@ body {
     font-size: 12px;
     text-transform: uppercase;
     color: var(--ink-soft);
-}
-
-/* diskretno srce */
-.guest-option span::before {
-    content: "♡";
-    color: var(--btn);
-    margin-right: 8px;
-    position: relative;
-    top: -1px;
 }
