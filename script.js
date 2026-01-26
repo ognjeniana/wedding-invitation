@@ -45,39 +45,45 @@ function guestLabel(n) {
 
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
-
-    // default
     brojOsobaEl.value = "1";
 
     if (!guestPick) return;
 
-    // ako je 1 -> nema potrebe da prikazujemo izbor
     if (!Number.isFinite(mg) || mg <= 1) {
         guestPick.style.display = "none";
         guestPick.innerHTML = "";
         return;
     }
 
-    // napravi chipove 1..mg
     guestPick.style.display = "flex";
     guestPick.innerHTML = "";
 
     for (let i = 1; i <= mg; i++) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "guest-choice" + (i === 1 ? " is-active" : "");
-        btn.dataset.guests = String(i);
-        btn.textContent = guestLabel(i);
+        const label = document.createElement("label");
+        label.className = "guest-option";
 
-        btn.addEventListener("click", () => {
-            guestPick.querySelectorAll(".guest-choice").forEach(b => b.classList.remove("is-active"));
-            btn.classList.add("is-active");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "guestCount";
+        input.value = String(i);
+        if (i === 1) input.checked = true;
+
+        input.addEventListener("change", () => {
             brojOsobaEl.value = String(i);
+            updateNegativeButtonText(i);
         });
 
-        guestPick.appendChild(btn);
+        const text = document.createElement("span");
+        text.textContent = i === 1 ? "1 GOST" : `${i} GOSTA`;
+
+        label.appendChild(input);
+        label.appendChild(text);
+        guestPick.appendChild(label);
     }
+
+    updateNegativeButtonText(1);
 }
+
 
 async function validateTokenAndSetup() {
     const t = getTokenFromUrl();
@@ -195,6 +201,15 @@ choiceButtons.forEach((btn) => {
 
             thankYou.classList.remove("hidden");
             thankYou.classList.add("show");
+            const negativeBtn = document.querySelector(".choice.negative");
+
+            function updateNegativeButtonText(guestCount) {
+                if (!negativeBtn) return;
+                negativeBtn.textContent =
+                    Number(guestCount) > 1
+                        ? "NISMO U MOGUĆNOSTI"
+                        : "NISAM U MOGUĆNOSTI";
+            }
 
         } catch (err) {
             console.log("POST ERROR:", err);

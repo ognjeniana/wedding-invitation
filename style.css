@@ -111,13 +111,13 @@ body {
 }
 
 .top-sub {
-    letter-spacing: .18em;
+    letter-spacing: .20em;
     font-size: 12px;
-    color: var(--ink);
-    font-family: "Playfair Display", serif;
+    color: var(--ink-soft);
     text-transform: uppercase;
     margin-bottom: 16px;
 }
+
 
 .names {
     margin-top: 6px;
@@ -257,6 +257,48 @@ body {
     font-size: 16px;
     outline: none;
 }
+
+.guest-pick.checklist {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 6px auto 0;
+    width: fit-content;
+}
+
+.guest-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    letter-spacing: .06em;
+    color: var(--ink);
+    font-family: "Playfair Display", serif;
+}
+
+.guest-option input {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    border-radius: 4px;
+    position: relative;
+}
+
+.guest-option input:checked {
+    background: var(--btn);
+    border-color: var(--btn);
+}
+
+.guest-option input:checked::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    background: white;
+}
+
 
 /* izbor broja gostiju (chipovi) */
 .guest-pick {

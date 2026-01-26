@@ -71,11 +71,15 @@
 
                         <!-- broj osoba: hidden + klik dugmići -->
                         <input type="hidden" name="brojOsoba" id="brojOsoba" required value="1">
-                        <div class="guest-pick" id="guestPick" aria-label="Broj gostiju"></div>
+                        <div class="guest-pick checklist" id="guestPick" aria-label="Broj gostiju"></div>
+
 
                         <div class="rsvp-buttons" id="rsvpButtons">
                             <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
-                            <button type="button" class="choice" data-value="Ne dolazim">NE DOLAZIM</button>
+                            <button type="button" class="choice negative" data-value="Ne dolazim">
+                                NISAM U MOGUĆNOSTI
+                            </button>
+
                         </div>
                     </form>
 
