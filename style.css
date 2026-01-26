@@ -1,9 +1,13 @@
+/* style.css */
 :root {
     --paper: #f7f3ed;
     --ink: #1b1b1b;
     --ink-soft: #3a3a3a;
     --muted: rgba(0, 0, 0, 0.12);
     --btn: #c7a17a;
+
+    /* NOVO: toplija “crna” za imena (da se uklopi sa kovertom) */
+    --ink-warm: #2a2622;
 }
 
 * {
@@ -108,7 +112,7 @@ body {
     margin-bottom: 6px;
 }
 
-/* NOVO: isti ton i boja kao topline */
+/* NOVO: isti ton kao topline */
 .top-sub {
     letter-spacing: .20em;
     font-size: 12px;
@@ -122,6 +126,10 @@ body {
     font-size: 18px;
     letter-spacing: .18em;
     font-family: "Playfair Display", serif;
+
+    /* NOVO: topliji ton (ne skroz crno) */
+    color: var(--ink-warm);
+    opacity: .94;
 }
 
 .names .amp {
@@ -257,7 +265,7 @@ body {
     outline: none;
 }
 
-/* NOVO: checklist izbor broja gostiju (bez promjene dizajna) */
+/* CHECKLIST (radio) */
 .guest-pick {
     display: none;
     /* JS uključuje kad maxGuests > 1 */
@@ -306,11 +314,21 @@ body {
     transform: translate(-50%, -50%);
 }
 
+/* tekst + srce */
 .guest-option span {
     font-family: "Playfair Display", serif;
-    letter-spacing: .08em;
-    font-size: 13px;
-    color: var(--ink);
+    letter-spacing: .12em;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.guest-option span::before {
+    content: "♡";
+    color: var(--btn);
+    margin-right: 8px;
+    position: relative;
+    top: -1px;
 }
 
 /* buttons */

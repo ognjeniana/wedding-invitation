@@ -15,6 +15,7 @@ const brojOsobaEl = document.getElementById("brojOsoba"); // hidden
 const guestPick = document.getElementById("guestPick");
 
 const choiceButtons = document.querySelectorAll(".choice");
+const positiveBtn = document.querySelector(".choice.positive");
 const negativeBtn = document.querySelector(".choice.negative");
 
 const nameInput = form ? form.querySelector('input[name="ime"]') : null;
@@ -41,16 +42,22 @@ function guestLabel(n) {
     return `${n} GOSTA`;
 }
 
-function updateNegativeButtonText(guestCount) {
-    if (!negativeBtn) return;
-    negativeBtn.textContent = Number(guestCount) > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
+function updateButtonTexts(guestCount) {
+    const n = Number(guestCount) || 1;
+
+    if (positiveBtn) {
+        positiveBtn.textContent = (n > 1) ? "DOLAZIMO" : "DOLAZIM";
+    }
+    if (negativeBtn) {
+        negativeBtn.textContent = (n > 1) ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
+    }
 }
 
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
     if (brojOsobaEl) brojOsobaEl.value = "1";
-    updateNegativeButtonText(1);
+    updateButtonTexts(1);
 
     if (!guestPick || !brojOsobaEl) return;
 
@@ -75,7 +82,7 @@ function setupBrojOsoba(maxGuests) {
 
         input.addEventListener("change", () => {
             brojOsobaEl.value = String(i);
-            updateNegativeButtonText(i);
+            updateButtonTexts(i);
         });
 
         const span = document.createElement("span");
@@ -85,12 +92,13 @@ function setupBrojOsoba(maxGuests) {
         label.appendChild(span);
         guestPick.appendChild(label);
     }
+
+    updateButtonTexts(brojOsobaEl.value || "1");
 }
 
 async function validateTokenAndSetup() {
     const t = getTokenFromUrl();
 
-    // Ako se otvori bez tokena, logično je da blokira.
     if (!t) {
         showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
         return;
@@ -199,6 +207,7 @@ choiceButtons.forEach((btn) => {
                     (odgovor === "Dolazim")
                         ? "Hvala vam na odgovoru. Radujemo se vašem dolasku."
                         : "Hvala vam na odgovoru. Razumijemo i šaljemo zagrljaj.";
+
                 thankYou.classList.remove("hidden");
                 thankYou.classList.add("show");
             }
