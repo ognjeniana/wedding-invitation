@@ -110,6 +110,12 @@ function setupBrojOsoba(maxGuests) {
     updateButtonTexts(brojOsobaEl?.value || "1");
 }
 
+// ===== INIT: confirm tekst + sakrij ime dok se ne učita =====
+setConfirmMessage(CONFIRM_TEXT);
+
+// sakrij polje imena dok se ne dobije fullName ili dok ne odlučimo da nema fullName
+if (nameInput) nameInput.classList.add("loading-name");
+
 // ===== VALIDACIJA TOKENA =====
 async function validateTokenAndSetup() {
     const t = getTokenFromUrl();
@@ -121,7 +127,7 @@ async function validateTokenAndSetup() {
 
     if (tokenInput) tokenInput.value = t;
 
-    // ✅ prikaži formu odmah (zaključanu) da UX djeluje instant
+    // ✅ pokaži formu odmah (zaključanu) da UX djeluje instant
     if (form) form.style.display = "flex";
     lockForm(true);
     setConfirmMessage(CONFIRM_TEXT);
@@ -150,9 +156,17 @@ async function validateTokenAndSetup() {
             return;
         }
 
-        if (data.fullName && nameInput) {
-            nameInput.value = data.fullName;
-            nameInput.readOnly = true;
+        // ✅ ime: bez “blink” efekta
+        if (nameInput) {
+            if (data.fullName) {
+                nameInput.value = data.fullName;
+                nameInput.readOnly = true;
+                nameInput.classList.remove("loading-name");
+            } else {
+                // ako nema fullName u tokenu, pokaži polje da gost upiše ručno
+                nameInput.readOnly = false;
+                nameInput.classList.remove("loading-name");
+            }
         }
 
         setupBrojOsoba(data.maxGuests);
@@ -246,5 +260,4 @@ choiceButtons.forEach((btn) => {
 });
 
 // ===== START =====
-setConfirmMessage(CONFIRM_TEXT);
 validateTokenAndSetup();

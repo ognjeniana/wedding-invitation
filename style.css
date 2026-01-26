@@ -403,3 +403,8 @@ body {
         width: 90px;
     }
 }
+
+.loading-name {
+    opacity: 0;
+    pointer-events: none;
+}
