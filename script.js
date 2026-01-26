@@ -1,3 +1,5 @@
+// script.js
+
 // 1) OVDJE UPIŠI TVOJ TAČAN /exec LINK (Google Apps Script Web App)
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
@@ -9,11 +11,14 @@ const thankYou = document.getElementById("thankYou");
 const centerInfo = document.getElementById("centerInfo");
 
 const odgovorInput = document.getElementById("odgovor");
-const rsvpButtons = document.getElementById("rsvpButtons");
 const choiceButtons = document.querySelectorAll(".choice");
 
 const tokenInput = document.getElementById("token");
+
+// broj osoba (hidden) + chip UI
 const brojOsobaEl = document.getElementById("brojOsoba");
+const guestPick = document.getElementById("guestPick");
+
 const nameInput = form.querySelector('input[name="ime"]');
 
 function getTokenFromUrl() {
@@ -28,35 +33,50 @@ function setConfirmMessage(msg) {
 
 function showBlocked(msg) {
     if (form) form.style.display = "none";
-    if (rsvpButtons) rsvpButtons.style.display = "none";
     if (centerInfo) centerInfo.style.display = "block";
     setConfirmMessage(msg);
+}
+
+function guestLabel(n) {
+    // traženo: "2 GOSTA", "3 GOSTA", "4 GOSTA"
+    // (za 1: "1 GOST")
+    return n === 1 ? "1 GOST" : `${n} GOSTA`;
 }
 
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
+    // default
+    brojOsobaEl.value = "1";
+
+    if (!guestPick) return;
+
+    // ako je 1 -> nema potrebe da prikazujemo izbor
     if (!Number.isFinite(mg) || mg <= 1) {
-        brojOsobaEl.style.display = "none";
-        brojOsobaEl.innerHTML = "";
-        const opt1 = document.createElement("option");
-        opt1.value = "1";
-        opt1.textContent = "1";
-        brojOsobaEl.appendChild(opt1);
-        brojOsobaEl.value = "1";
+        guestPick.style.display = "none";
+        guestPick.innerHTML = "";
         return;
     }
 
-    brojOsobaEl.style.display = "block";
-    brojOsobaEl.innerHTML = "";
+    // napravi chipove 1..mg
+    guestPick.style.display = "flex";
+    guestPick.innerHTML = "";
 
     for (let i = 1; i <= mg; i++) {
-        const opt = document.createElement("option");
-        opt.value = String(i);
-        opt.textContent = String(i);
-        brojOsobaEl.appendChild(opt);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "guest-choice" + (i === 1 ? " is-active" : "");
+        btn.dataset.guests = String(i);
+        btn.textContent = guestLabel(i);
+
+        btn.addEventListener("click", () => {
+            guestPick.querySelectorAll(".guest-choice").forEach(b => b.classList.remove("is-active"));
+            btn.classList.add("is-active");
+            brojOsobaEl.value = String(i);
+        });
+
+        guestPick.appendChild(btn);
     }
-    brojOsobaEl.value = "1";
 }
 
 async function validateTokenAndSetup() {
@@ -131,10 +151,7 @@ choiceButtons.forEach((btn) => {
         // disable odmah
         choiceButtons.forEach((b) => (b.disabled = true));
 
-        const broj =
-            (brojOsobaEl.style.display === "none" || getComputedStyle(brojOsobaEl).display === "none")
-                ? "1"
-                : (brojOsobaEl.value || "1");
+        const broj = (brojOsobaEl.value || "1");
 
         const body = new URLSearchParams();
         body.set("token", tokenInput.value);

@@ -1,3 +1,4 @@
+/* style.css */
 :root {
     --paper: #f7f3ed;
     --ink: #1b1b1b;
@@ -105,6 +106,16 @@ body {
     letter-spacing: .20em;
     font-size: 12px;
     color: var(--ink-soft);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.top-sub {
+    letter-spacing: .18em;
+    font-size: 12px;
+    color: var(--ink);
+    font-family: "Playfair Display", serif;
+    text-transform: uppercase;
     margin-bottom: 16px;
 }
 
@@ -238,14 +249,47 @@ body {
     gap: 10px;
 }
 
-.rsvp input,
-.rsvp select {
+.rsvp input {
     padding: 12px 12px;
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.12);
     background: rgba(255, 255, 255, 0.85);
     font-size: 16px;
     outline: none;
+}
+
+/* izbor broja gostiju (chipovi) */
+.guest-pick {
+    display: none;
+    /* JS uključuje ako maxGuests >= 2 */
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.guest-choice {
+    padding: 12px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    background: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    font-family: "Playfair Display", serif;
+    letter-spacing: .08em;
+    font-size: 13px;
+    transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    min-width: 96px;
+}
+
+.guest-choice:hover {
+    transform: translateY(-1px);
+    opacity: .92;
+}
+
+.guest-choice.is-active {
+    background: var(--btn);
+    color: #fff;
+    border-color: transparent;
 }
 
 .rsvp-buttons {
