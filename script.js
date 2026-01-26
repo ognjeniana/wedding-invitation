@@ -134,7 +134,7 @@ async function validateTokenAndSetup() {
         setupBrojOsoba(data.maxGuests);
 
         if (form) form.style.display = "flex";
-        setConfirmMessage("Molimo vas da potvrdite dolazak");
+        setConfirmMessage("Molimo vas da nam potvrdite dolazak do 30.03.2026");
 
     } catch (e) {
         console.log("VALIDATE ERROR:", e);
