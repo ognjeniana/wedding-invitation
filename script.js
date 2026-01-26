@@ -1,6 +1,8 @@
-// 1) OVDJE UPIŠI TVOJ TAČAN /exec LINK (Google Apps Script Web App)
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
+// ===== KONFIGURACIJA =====
+const SCRIPT_URL =
+    "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
+// ===== ELEMENTI =====
 const envelope = document.getElementById("envelope");
 const invitationWrap = document.getElementById("invitationWrap");
 
@@ -15,13 +17,12 @@ const brojOsobaEl = document.getElementById("brojOsoba");
 const guestPick = document.getElementById("guestPick");
 
 const choiceButtons = document.querySelectorAll(".choice");
-
-// hvataj po data-value (da ne zavisi od klasa)
 const positiveBtn = document.querySelector('.choice[data-value="Dolazim"]');
 const negativeBtn = document.querySelector('.choice[data-value="Ne dolazim"]');
 
 const nameInput = form ? form.querySelector('input[name="ime"]') : null;
 
+// ===== HELPERS =====
 function getTokenFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return (params.get("t") || "").trim();
@@ -44,11 +45,14 @@ function guestLabel(n) {
 
 function updateButtonTexts(guestCount) {
     const n = Number(guestCount) || 1;
-
-    if (positiveBtn) positiveBtn.textContent = (n > 1) ? "DOLAZIMO" : "DOLAZIM";
-    if (negativeBtn) negativeBtn.textContent = (n > 1) ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
+    if (positiveBtn) positiveBtn.textContent = n > 1 ? "DOLAZIMO" : "DOLAZIM";
+    if (negativeBtn) negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
 }
 
+// ===== POČETNI TEKST (PRIJE FORME) =====
+setConfirmMessage("Molimo Vas da nam potvrdite dolazak do 30.03.2026.");
+
+// ===== BROJ GOSTIJU =====
 function setupBrojOsoba(maxGuests) {
     const mg = Number(maxGuests || 1);
 
@@ -88,10 +92,9 @@ function setupBrojOsoba(maxGuests) {
         label.appendChild(span);
         guestPick.appendChild(label);
     }
-
-    updateButtonTexts(brojOsobaEl.value || "1");
 }
 
+// ===== VALIDACIJA TOKENA =====
 async function validateTokenAndSetup() {
     const t = getTokenFromUrl();
 
@@ -111,8 +114,7 @@ async function validateTokenAndSetup() {
         try {
             data = JSON.parse(text);
         } catch {
-            console.log("VALIDATE RESPONSE (not JSON):", text);
-            showBlocked("Greška: provjera linka ne radi (pogrešan /exec link ili Web App access).");
+            showBlocked("Greška pri provjeri linka.");
             return;
         }
 
@@ -134,15 +136,13 @@ async function validateTokenAndSetup() {
         setupBrojOsoba(data.maxGuests);
 
         if (form) form.style.display = "flex";
-        setConfirmMessage("Molimo vas da nam potvrdite dolazak do 30.03.2026");
 
     } catch (e) {
-        console.log("VALIDATE ERROR:", e);
-        showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
+        showBlocked("Došlo je do greške. Pokušajte ponovo kasnije.");
     }
 }
 
-/* KOVERAT -> POZIVNICA */
+// ===== ANIMACIJA KOVERTE =====
 envelope?.addEventListener("click", () => {
     envelope.classList.add("open");
     setTimeout(() => {
@@ -151,7 +151,7 @@ envelope?.addEventListener("click", () => {
     }, 760);
 });
 
-/* Klik na dugmad -> ODMAH šalje */
+// ===== SLANJE ODGOVORA =====
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
@@ -162,15 +162,11 @@ choiceButtons.forEach((btn) => {
 
         choiceButtons.forEach((b) => (b.disabled = true));
 
-        const broj = brojOsobaEl?.value || "1";
-        const fullName = nameInput?.value || "";
-        const token = tokenInput?.value || "";
-
         const body = new URLSearchParams();
-        body.set("token", token);
-        body.set("fullName", fullName);
+        body.set("token", tokenInput.value);
+        body.set("fullName", nameInput?.value || "");
         body.set("odgovor", odgovor);
-        body.set("brojOsoba", broj);
+        body.set("brojOsoba", brojOsobaEl?.value || "1");
 
         try {
             const res = await fetch(SCRIPT_URL, {
@@ -183,16 +179,9 @@ choiceButtons.forEach((btn) => {
             let data = null;
             try { data = JSON.parse(text); } catch { }
 
-            if (!data) {
-                console.log("POST RESPONSE (not JSON):", text);
+            if (!data || !data.ok) {
                 choiceButtons.forEach((b) => (b.disabled = false));
-                setConfirmMessage("Greška: server nije vratio JSON odgovor.");
-                return;
-            }
-
-            if (!data.ok) {
-                choiceButtons.forEach((b) => (b.disabled = false));
-                setConfirmMessage(data.error || "Greška pri slanju.");
+                setConfirmMessage("Greška pri slanju.");
                 return;
             }
 
@@ -201,20 +190,19 @@ choiceButtons.forEach((btn) => {
 
             if (thankYou) {
                 thankYou.textContent =
-                    (odgovor === "Dolazim")
+                    odgovor === "Dolazim"
                         ? "Hvala vam na odgovoru. Radujemo se vašem dolasku."
                         : "Hvala vam na odgovoru. Razumijemo i šaljemo zagrljaj.";
                 thankYou.classList.remove("hidden");
                 thankYou.classList.add("show");
             }
 
-        } catch (err) {
-            console.log("POST ERROR:", err);
+        } catch {
             choiceButtons.forEach((b) => (b.disabled = false));
             setConfirmMessage("Greška pri slanju. Pokušajte ponovo.");
         }
     });
 });
 
-// pokreni validaciju odmah na učitavanje
+// ===== START =====
 validateTokenAndSetup();
