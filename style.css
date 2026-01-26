@@ -1,75 +1,99 @@
 :root {
-    --paper: #faf1f1;
-    /* SVIJETLA BLAGO ROZA */
+    /* SVJETLIJA blago-roza “paper” nijansa */
+    --paper: #fbf2f2;
+
     --ink: #1b1b1b;
     --ink-soft: #3a3a3a;
-    --muted: rgba(0, 0, 0, .12);
+    --muted: rgba(0, 0, 0, 0.12);
     --btn: #c7a17a;
 }
 
 * {
-    box-sizing: border-box
+    box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    font-family: "Cormorant Garamond", serif;
     color: var(--ink);
+    font-family: "Cormorant Garamond", serif;
     background:
         radial-gradient(900px 520px at 20% 10%, #fbf6ee, transparent),
         radial-gradient(800px 480px at 80% 30%, #f5ebe1, transparent),
         linear-gradient(180deg, #fff, #fbf7f1);
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* sve centrirano */
 .page {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    gap: 22px;
     padding: 28px 16px;
 }
 
-.hidden {
-    display: none !important
-}
-
-/* koverta */
+/* ================== KOVERAT ================== */
 .envelope-photo {
     width: 360px;
     height: 560px;
     border-radius: 18px;
-    background: url("envelope-photo.png") center/cover no-repeat;
     border: none;
     cursor: pointer;
-    box-shadow: 0 28px 70px rgba(0, 0, 0, .2);
+    padding: 0;
+    background: url("envelope-photo.png") center/cover no-repeat;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, .20);
     transform: rotate(-4deg);
 }
 
 .envelope-photo.open {
-    animation: slideLeft .8s forwards;
+    animation: slideLeft .8s ease forwards;
+    pointer-events: none;
 }
 
 @keyframes slideLeft {
     to {
         opacity: 0;
-        transform: translateX(-420px) rotate(-10deg)
+        transform: translateX(-420px) rotate(-10deg) scale(0.98);
     }
 }
 
-/* pozivnica */
+/* ================== POZIVNICA ================== */
 .invitation-wrap {
-    display: none
+    display: none;
+    width: 100%;
+    justify-content: center;
+    pointer-events: none;
 }
 
 .invitation-wrap.show {
-    display: flex
+    display: flex;
+    pointer-events: auto;
+    animation: fadeIn .8s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .invitation-card {
     width: min(540px, 100%);
     border-radius: 18px;
-    box-shadow: 0 22px 60px rgba(0, 0, 0, .14);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.14);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .paper {
@@ -78,43 +102,59 @@ body {
     text-align: center;
 }
 
-/* tekst */
-.topline,
-.top-sub {
-    font-size: 12px;
+/* ================== TEKST ================== */
+.topline {
     letter-spacing: .20em;
+    font-size: 12px;
     color: var(--ink-soft);
+    margin-bottom: 6px;
+}
+
+/* “NAŠ POSEBAN DAN” identično topline */
+.top-sub {
+    letter-spacing: .20em;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
     text-transform: uppercase;
 }
 
-.top-sub {
-    margin-bottom: 16px
-}
-
 .names {
-    font-family: "Playfair Display", serif;
+    margin-top: 6px;
     font-size: 18px;
     letter-spacing: .18em;
-    margin-top: 6px;
-    color: #2a2622;
+    font-family: "Playfair Display", serif;
+
+    /* MALO MEKŠE, ne “crno” */
+    color: var(--ink-soft);
 }
 
 .names .amp {
     font-family: "Cormorant Garamond", serif;
     font-style: italic;
+    font-weight: 500;
+    letter-spacing: 0;
+    opacity: 0.8;
+    position: relative;
+    top: 1px;
     margin: 0 10px;
 }
 
-/* datum */
+/* datum + linije */
 .date-row {
     margin: 22px auto 14px;
+    width: min(440px, 100%);
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 18px;
     align-items: center;
+    gap: 18px;
 }
 
 .date-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     font-size: 14px;
     letter-spacing: .16em;
     color: var(--ink-soft);
@@ -125,118 +165,180 @@ body {
     width: 110px;
     height: 1px;
     background: var(--muted);
-    margin: 8px auto;
+}
+
+.date-box .sub {
+    font-size: 12px;
+    letter-spacing: .12em;
+    opacity: .9;
+    text-transform: none;
 }
 
 .date-center {
+    padding: 0 14px;
     border-left: 1px solid var(--muted);
     border-right: 1px solid var(--muted);
-    padding: 0 14px;
+    min-width: 120px;
 }
 
-.month,
-.year {
-    font-size: 12px;
+.month {
     letter-spacing: .20em;
+    font-size: 12px;
     color: var(--ink-soft);
+    text-transform: uppercase;
 }
 
 .day {
     font-family: "Playfair Display", serif;
     font-size: 56px;
+    font-weight: 600;
     line-height: 1.05;
 }
 
-/* LOKACIJA – ISTI FONT I TON */
-.place,
-.addr {
-    font-family: "Playfair Display", serif;
-    letter-spacing: .18em;
+.year {
+    letter-spacing: .22em;
+    font-size: 12px;
+    color: var(--ink-soft);
     text-transform: uppercase;
-    color: #2a2622;
 }
 
-.addr {
+/* sala + adresa: naglašeni ISTO, kao set */
+.center-info {
+    margin: 18px 0 6px;
+    text-align: center;
+}
+
+.center-info .place,
+.center-info .addr {
+    font-family: "Playfair Display", serif;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+.center-info .place {
+    font-size: 14px;
+}
+
+.center-info .addr {
     margin-top: 6px;
-    font-size: 13px
+    font-size: 13px;
+    opacity: 1;
+    /* uklonjeno “fade”, da bude naglašenije */
 }
 
 .place-line {
     width: 180px;
     height: 1px;
     background: var(--muted);
-    margin: 14px auto;
+    margin: 14px auto 0;
 }
 
-.confirm {
+.center-info .confirm {
     margin-top: 12px;
-    font-size: 16px
-}
-
-/* RSVP */
-#rsvpForm {
-    display: none
-}
-
-.rsvp input {
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(0, 0, 0, .12);
-    background: rgba(255, 255, 255, .85);
     font-size: 16px;
+    letter-spacing: .06em;
+    color: #3a3a3a;
+}
+
+/* ================== RSVP ================== */
+/* sakrij formu dok JS ne potvrdi token */
+#rsvpForm {
+    display: none;
+}
+
+.rsvp {
+    width: min(360px, 100%);
+    margin: 16px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rsvp input,
+.rsvp select {
+    padding: 12px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    outline: none;
+}
+
+/* centriraj “Ime i prezime” */
+.rsvp input[name="ime"] {
     text-align: center;
 }
 
-/* checklist – BEZ SRCA */
+.rsvp input[name="ime"]::placeholder {
+    text-align: center;
+}
+
+/* checklist (bez srca) */
 .guest-pick {
     display: none;
-    margin-top: 6px;
-    text-align: left
+    /* JS uključuje kad maxGuests > 1 */
+    width: min(360px, 100%);
+    margin: 6px auto 0;
+    text-align: left;
+    padding: 2px 2px;
 }
 
 .guest-option {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 6px 4px;
+    padding: 8px 6px;
+    border-radius: 12px;
+    cursor: pointer;
 }
 
+.guest-option:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.guest-option input[type="radio"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 50%;
+    position: relative;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.guest-option input[type="radio"]:checked {
+    border-color: var(--btn);
+}
+
+.guest-option input[type="radio"]:checked::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--btn);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* checklist tekst: moderniji, manje “klasik”, ali i dalje elegantno */
 .guest-option span {
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    font-size: 12px;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: .10em;
+    font-size: 12px;
     text-transform: uppercase;
     color: var(--ink-soft);
 }
 
-.guest-option input {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border: 1px solid rgba(0, 0, 0, .3);
-    border-radius: 50%;
-}
-
-.guest-option input:checked {
-    border-color: var(--btn);
-}
-
-.guest-option input:checked::after {
-    content: "";
-    width: 8px;
-    height: 8px;
-    background: var(--btn);
-    border-radius: 50%;
-    display: block;
-    margin: 3px;
-}
-
-/* dugmad */
+/* buttons */
 .rsvp-buttons {
     display: flex;
     gap: 12px;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 .choice {
@@ -245,12 +347,59 @@ body {
     border: none;
     background: var(--btn);
     color: white;
+    cursor: pointer;
     font-family: "Playfair Display", serif;
     letter-spacing: .08em;
-    cursor: pointer;
+    transition: transform .15s ease, opacity .15s ease;
 }
 
+.choice:hover {
+    transform: translateY(-1px);
+    opacity: .92;
+}
+
+.choice:disabled {
+    opacity: .65;
+    cursor: default;
+    transform: none;
+}
+
+/* ================== HVALA (fade in) ================== */
 .thank-you {
     margin-top: 18px;
-    font-size: 16px
+    font-size: 16px;
+    letter-spacing: .06em;
+    color: #3a3a3a;
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+.thank-you.show {
+    animation: thankFade .7s ease forwards;
+}
+
+@keyframes thankFade {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 520px) {
+    .paper {
+        padding: 32px 18px 26px;
+    }
+
+    .envelope-photo {
+        width: 330px;
+        height: 520px;
+    }
+
+    .date-row {
+        gap: 12px;
+    }
+
+    .date-box .line {
+        width: 90px;
+    }
 }

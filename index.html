@@ -18,8 +18,10 @@
 <body>
     <main class="page">
 
+        <!-- KOVERAT -->
         <button class="envelope-photo" id="envelope" aria-label="Otvori pozivnicu"></button>
 
+        <!-- POZIVNICA -->
         <div class="invitation-wrap" id="invitationWrap">
             <div class="invitation-card">
                 <div class="paper">
@@ -40,7 +42,7 @@
                         </div>
 
                         <div class="date-center">
-                            <div class="month">JUN</div>
+                            <div class="month">APRIL</div>
                             <div class="day">18</div>
                             <div class="year">2026</div>
                         </div>
@@ -59,16 +61,18 @@
                         <div class="confirm">Molimo vas da potvrdite dolazak</div>
                     </div>
 
+                    <!-- RSVP -->
                     <form id="rsvpForm" class="rsvp">
                         <input type="text" name="ime" placeholder="Ime i prezime" required>
 
-                        <input type="hidden" id="odgovor">
-                        <input type="hidden" id="token">
-                        <input type="hidden" id="brojOsoba" value="1">
+                        <input type="hidden" name="odgovor" id="odgovor" required>
+                        <input type="hidden" name="token" id="token" required>
 
-                        <div class="guest-pick" id="guestPick"></div>
+                        <!-- broj gostiju: hidden + checklist -->
+                        <input type="hidden" name="brojOsoba" id="brojOsoba" required value="1">
+                        <div class="guest-pick" id="guestPick" aria-label="Broj gostiju"></div>
 
-                        <div class="rsvp-buttons">
+                        <div class="rsvp-buttons" id="rsvpButtons">
                             <button type="button" class="choice" data-value="Dolazim">DOLAZIM</button>
                             <button type="button" class="choice negative" data-value="Ne dolazim">NISAM U
                                 MOGUĆNOSTI</button>
@@ -82,6 +86,7 @@
         </div>
 
     </main>
+
     <script src="script.js"></script>
 </body>
 
