@@ -401,3 +401,47 @@ body {
         width: 90px;
     }
 }
+
+/* === PATCH: zadrži original, samo dorade === */
+
+/* 1) Paper nijansa: blago roze kao koverta (blaže) */
+:root {
+    --paper: #f6ecec;
+    /* blago roza/bež, nije bijelo */
+}
+
+/* 2) "NAŠ POSEBAN DAN" identično topline */
+.top-sub {
+    letter-spacing: .20em;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+}
+
+/* 3) Centriraj unos imena */
+.rsvp input[name="ime"] {
+    text-align: center;
+}
+
+.rsvp input[name="ime"]::placeholder {
+    text-align: center;
+}
+
+/* 4) Checklist: moderniji font + elegantno, bez “previše klasike” */
+.guest-option span {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    letter-spacing: .10em;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+}
+
+/* diskretno srce */
+.guest-option span::before {
+    content: "♡";
+    color: var(--btn);
+    margin-right: 8px;
+    position: relative;
+    top: -1px;
+}
