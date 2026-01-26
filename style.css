@@ -110,6 +110,7 @@ body {
     text-transform: uppercase;
 }
 
+/* ISTI TON kao topline (isto slovo/boja) */
 .top-sub {
     letter-spacing: .20em;
     font-size: 12px;
@@ -117,7 +118,6 @@ body {
     text-transform: uppercase;
     margin-bottom: 16px;
 }
-
 
 .names {
     margin-top: 6px;
@@ -249,7 +249,7 @@ body {
     gap: 10px;
 }
 
-.rsvp input {
+.rsvp input[type="text"] {
     padding: 12px 12px;
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.12);
@@ -258,8 +258,10 @@ body {
     outline: none;
 }
 
+/* checklist radio */
 .guest-pick.checklist {
     display: none;
+    /* JS uključuje ako maxGuests >= 2 */
     flex-direction: column;
     gap: 8px;
     align-items: flex-start;
@@ -285,6 +287,7 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.35);
     border-radius: 4px;
     position: relative;
+    background: rgba(255, 255, 255, 0.8);
 }
 
 .guest-option input:checked {
@@ -299,46 +302,12 @@ body {
     background: white;
 }
 
-
-/* izbor broja gostiju (chipovi) */
-.guest-pick {
-    display: none;
-    /* JS uključuje ako maxGuests >= 2 */
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 4px;
-}
-
-.guest-choice {
-    padding: 12px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(0, 0, 0, 0.14);
-    background: rgba(255, 255, 255, 0.75);
-    cursor: pointer;
-    font-family: "Playfair Display", serif;
-    letter-spacing: .08em;
-    font-size: 13px;
-    transition: transform .15s ease, opacity .15s ease, background .15s ease;
-    min-width: 96px;
-}
-
-.guest-choice:hover {
-    transform: translateY(-1px);
-    opacity: .92;
-}
-
-.guest-choice.is-active {
-    background: var(--btn);
-    color: #fff;
-    border-color: transparent;
-}
-
+/* dugmad */
 .rsvp-buttons {
     display: flex;
     gap: 12px;
     justify-content: center;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .choice {
