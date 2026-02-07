@@ -64,7 +64,9 @@ function guestLabel(n) {
 function updateButtonTexts(guestCount) {
     const n = Number(guestCount) || 1;
     if (positiveBtn) positiveBtn.textContent = n > 1 ? "DOLAZIMO" : "DOLAZIM";
-    if (negativeBtn) negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
+    if (negativeBtn)
+        negativeBtn.textContent =
+            n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
 }
 
 function setupBrojOsoba(maxGuests) {
@@ -133,7 +135,9 @@ async function validateTokenAndSetup() {
     setConfirmMessage(CONFIRM_TEXT);
 
     try {
-        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
+        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(
+            t
+        )}&_=${Date.now()}`;
         const res = await fetch(url);
         const text = await res.text();
 
@@ -142,7 +146,9 @@ async function validateTokenAndSetup() {
             data = JSON.parse(text);
         } catch {
             console.log("VALIDATE RESPONSE (not JSON):", text);
-            showBlocked("Greška: provjera linka ne radi (pogrešan /exec link ili Web App access).");
+            showBlocked(
+                "Greška: provjera linka ne radi (pogrešan /exec link ili Web App access)."
+            );
             return;
         }
 
@@ -174,10 +180,11 @@ async function validateTokenAndSetup() {
         // ✅ otključaj kad je sve spremno
         lockForm(false);
         setConfirmMessage(CONFIRM_TEXT);
-
     } catch (e) {
         console.log("VALIDATE ERROR:", e);
-        showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
+        showBlocked(
+            "Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije."
+        );
     }
 }
 
@@ -211,18 +218,22 @@ choiceButtons.forEach((btn) => {
 
         if (thankYou) {
             thankYou.textContent =
-                (odgovor === "Dolazim")
+                odgovor === "Dolazim"
                     ? "Hvala Vam na odgovoru. Radujemo se Vašem dolasku."
                     : "Hvala Vam na odgovoru. Žao nam je što nećete biti u mogućnosti da prisustvujete.";
             thankYou.classList.remove("hidden");
             thankYou.classList.add("show");
         }
 
+        // ✅ broj gostiju: ako ne dolazi -> 0, ako dolazi -> izabrano (min 1)
+        const brojZaSlanje =
+            odgovor === "Dolazim" ? (brojOsobaEl?.value || "1") : "0";
+
         const body = new URLSearchParams();
         body.set("token", tokenInput?.value || "");
         body.set("fullName", nameInput?.value || "");
         body.set("odgovor", odgovor);
-        body.set("brojOsoba", brojOsobaEl?.value || "1");
+        body.set("brojOsoba", brojZaSlanje);
 
         try {
             const res = await fetch(SCRIPT_URL, {
@@ -233,12 +244,13 @@ choiceButtons.forEach((btn) => {
 
             const text = await res.text();
             let data = null;
-            try { data = JSON.parse(text); } catch { }
+            try {
+                data = JSON.parse(text);
+            } catch { }
 
             if (!data || !data.ok) throw new Error(data?.error || "Server error");
 
             // uspjeh: ništa ne diramo, poruka već stoji instant
-
         } catch (err) {
             console.log("POST ERROR:", err);
 
