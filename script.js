@@ -25,6 +25,9 @@ const nameInput = form ? form.querySelector('input[name="ime"]') : null;
 // ===== TEKST =====
 const CONFIRM_TEXT = "Molimo Vas da nam potvrdite dolazak do 30.03.2026.";
 
+// ===== STATE =====
+let validateStarted = false;
+
 // ===== HELPERS =====
 function getTokenFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -36,24 +39,10 @@ function setConfirmMessage(msg) {
     if (confirm) confirm.textContent = msg;
 }
 
-function lockForm(isLocked) {
-    if (!form) return;
-
-    const inputs = form.querySelectorAll("input, button");
-    inputs.forEach((el) => {
-        // ne diramo hidden polja
-        if (el.type === "hidden") return;
-        el.disabled = isLocked;
-    });
-
-    // sigurnost: i .choice posebno
-    choiceButtons.forEach((b) => (b.disabled = isLocked));
-}
-
 function showBlocked(msg) {
     if (form) form.style.display = "none";
     if (guestPick) guestPick.style.display = "none";
-    lockForm(true);
+    choiceButtons.forEach((b) => (b.disabled = true));
     setConfirmMessage(msg);
 }
 
@@ -65,8 +54,7 @@ function updateButtonTexts(guestCount) {
     const n = Number(guestCount) || 1;
     if (positiveBtn) positiveBtn.textContent = n > 1 ? "DOLAZIMO" : "DOLAZIM";
     if (negativeBtn)
-        negativeBtn.textContent =
-            n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
+        negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
 }
 
 function setupBrojOsoba(maxGuests) {
@@ -112,14 +100,30 @@ function setupBrojOsoba(maxGuests) {
     updateButtonTexts(brojOsobaEl?.value || "1");
 }
 
-// ===== INIT: confirm tekst + sakrij ime dok se ne učita =====
-setConfirmMessage(CONFIRM_TEXT);
+function showRsvpInstantLoading() {
+    // ✅ forma se vidi odmah, ali dugmad disabled dok ne stigne validate
+    if (form) form.style.display = "flex";
+    choiceButtons.forEach((b) => (b.disabled = true));
+    setConfirmMessage(CONFIRM_TEXT);
 
-// sakrij polje imena dok se ne dobije fullName ili dok ne odlučimo da nema fullName
-if (nameInput) nameInput.classList.add("loading-name");
+    if (nameInput) {
+        nameInput.classList.remove("loading-name");
+        nameInput.value = "";
+        nameInput.placeholder = "Učitavanje imena…";
+        nameInput.readOnly = true;
+    }
+
+    // default bez guest pickera dok ne dobijemo maxGuests
+    if (guestPick) guestPick.style.display = "none";
+    if (brojOsobaEl) brojOsobaEl.value = "1";
+    updateButtonTexts(1);
+}
 
 // ===== VALIDACIJA TOKENA =====
 async function validateTokenAndSetup() {
+    if (validateStarted) return;
+    validateStarted = true;
+
     const t = getTokenFromUrl();
 
     if (!t) {
@@ -129,15 +133,11 @@ async function validateTokenAndSetup() {
 
     if (tokenInput) tokenInput.value = t;
 
-    // ✅ pokaži formu odmah (zaključanu) da UX djeluje instant
-    if (form) form.style.display = "flex";
-    lockForm(true);
-    setConfirmMessage(CONFIRM_TEXT);
+    // ✅ pokaži RSVP odmah (loading state)
+    showRsvpInstantLoading();
 
     try {
-        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(
-            t
-        )}&_=${Date.now()}`;
+        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
         const res = await fetch(url);
         const text = await res.text();
 
@@ -146,9 +146,7 @@ async function validateTokenAndSetup() {
             data = JSON.parse(text);
         } catch {
             console.log("VALIDATE RESPONSE (not JSON):", text);
-            showBlocked(
-                "Greška: provjera linka ne radi (pogrešan /exec link ili Web App access)."
-            );
+            showBlocked("Greška: provjera linka ne radi (pogrešan /exec link ili Web App access).");
             return;
         }
 
@@ -162,35 +160,36 @@ async function validateTokenAndSetup() {
             return;
         }
 
-        // ✅ ime: bez “blink” efekta
+        // ✅ ime: kad stigne, samo upiši
         if (nameInput) {
             if (data.fullName) {
                 nameInput.value = data.fullName;
                 nameInput.readOnly = true;
-                nameInput.classList.remove("loading-name");
             } else {
-                // ako nema fullName u tokenu, pokaži polje da gost upiše ručno
+                nameInput.value = "";
+                nameInput.placeholder = "Ime i prezime";
                 nameInput.readOnly = false;
-                nameInput.classList.remove("loading-name");
             }
         }
 
         setupBrojOsoba(data.maxGuests);
 
-        // ✅ otključaj kad je sve spremno
-        lockForm(false);
+        // ✅ otključaj dugmad tek kad je sve spremno
+        choiceButtons.forEach((b) => (b.disabled = false));
         setConfirmMessage(CONFIRM_TEXT);
     } catch (e) {
         console.log("VALIDATE ERROR:", e);
-        showBlocked(
-            "Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije."
-        );
+        showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
     }
 }
 
-// ===== ANIMACIJA KOVERTE =====
+// ===== ANIMACIJA KOVERTE + PARALELNO VALIDATE =====
 envelope?.addEventListener("click", () => {
     envelope.classList.add("open");
+
+    // 🚀 odmah kreni sa validate (dok traje animacija)
+    validateTokenAndSetup();
+
     setTimeout(() => {
         envelope.style.display = "none";
         invitationWrap?.classList.add("show");
@@ -226,8 +225,7 @@ choiceButtons.forEach((btn) => {
         }
 
         // ✅ broj gostiju: ako ne dolazi -> 0, ako dolazi -> izabrano (min 1)
-        const brojZaSlanje =
-            odgovor === "Dolazim" ? (brojOsobaEl?.value || "1") : "0";
+        const brojZaSlanje = (odgovor === "Dolazim") ? (brojOsobaEl?.value || "1") : "0";
 
         const body = new URLSearchParams();
         body.set("token", tokenInput?.value || "");
@@ -244,9 +242,7 @@ choiceButtons.forEach((btn) => {
 
             const text = await res.text();
             let data = null;
-            try {
-                data = JSON.parse(text);
-            } catch { }
+            try { data = JSON.parse(text); } catch { }
 
             if (!data || !data.ok) throw new Error(data?.error || "Server error");
 
@@ -270,6 +266,3 @@ choiceButtons.forEach((btn) => {
         }
     });
 });
-
-// ===== START =====
-validateTokenAndSetup();
