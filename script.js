@@ -1,8 +1,8 @@
-// 1) OVDJE UPIŠI TVOJ TAČAN /exec LINK (Google Apps Script Web App)
+
 const SCRIPT_URL =
     "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
 
-// ===== ELEMENTI =====
+
 const envelope = document.getElementById("envelope");
 const invitationWrap = document.getElementById("invitationWrap");
 
@@ -22,13 +22,13 @@ const negativeBtn = document.querySelector('.choice[data-value="Ne dolazim"]');
 
 const nameInput = form ? form.querySelector('input[name="ime"]') : null;
 
-// ===== TEKST =====
 const CONFIRM_TEXT = "Molimo Vas da nam potvrdite dolazak do 30.03.2026.";
 
-// ===== STATE =====
-let validateStarted = false;
 
-// ===== HELPERS =====
+let prefetchPromise = null;
+let prefetchedData = null; // { ok, used, fullName, maxGuests }
+
+
 function getTokenFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return (params.get("t") || "").trim();
@@ -39,10 +39,17 @@ function setConfirmMessage(msg) {
     if (confirm) confirm.textContent = msg;
 }
 
+function setButtonsDisabled(disabled) {
+    choiceButtons.forEach((b) => (b.disabled = disabled));
+    if (nameInput) nameInput.disabled = disabled;
+    const radios = guestPick?.querySelectorAll('input[type="radio"]') || [];
+    radios.forEach(r => r.disabled = disabled);
+}
+
 function showBlocked(msg) {
     if (form) form.style.display = "none";
     if (guestPick) guestPick.style.display = "none";
-    choiceButtons.forEach((b) => (b.disabled = true));
+    setButtonsDisabled(true);
     setConfirmMessage(msg);
 }
 
@@ -53,8 +60,7 @@ function guestLabel(n) {
 function updateButtonTexts(guestCount) {
     const n = Number(guestCount) || 1;
     if (positiveBtn) positiveBtn.textContent = n > 1 ? "DOLAZIMO" : "DOLAZIM";
-    if (negativeBtn)
-        negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
+    if (negativeBtn) negativeBtn.textContent = n > 1 ? "NISMO U MOGUĆNOSTI" : "NISAM U MOGUĆNOSTI";
 }
 
 function setupBrojOsoba(maxGuests) {
@@ -100,103 +106,90 @@ function setupBrojOsoba(maxGuests) {
     updateButtonTexts(brojOsobaEl?.value || "1");
 }
 
-function showRsvpInstantLoading() {
-    // ✅ forma se vidi odmah, ali dugmad disabled dok ne stigne validate
-    if (form) form.style.display = "flex";
-    choiceButtons.forEach((b) => (b.disabled = true));
-    setConfirmMessage(CONFIRM_TEXT);
-
-    if (nameInput) {
-        nameInput.classList.remove("loading-name");
-        nameInput.value = "";
-        nameInput.placeholder = "Učitavanje imena…";
-        nameInput.readOnly = true;
-    }
-
-    // default bez guest pickera dok ne dobijemo maxGuests
-    if (guestPick) guestPick.style.display = "none";
-    if (brojOsobaEl) brojOsobaEl.value = "1";
-    updateButtonTexts(1);
-}
-
-// ===== VALIDACIJA TOKENA =====
-async function validateTokenAndSetup() {
-    if (validateStarted) return;
-    validateStarted = true;
+async function prefetchValidate() {
+    if (prefetchPromise) return prefetchPromise;
 
     const t = getTokenFromUrl();
-
     if (!t) {
-        showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
-        return;
+        prefetchedData = { ok: false, error: "invalid_link" };
+        return prefetchedData;
     }
 
     if (tokenInput) tokenInput.value = t;
 
-    // ✅ pokaži RSVP odmah (loading state)
-    showRsvpInstantLoading();
-
-    try {
-        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
-        const res = await fetch(url);
-        const text = await res.text();
-
-        let data;
+    prefetchPromise = (async () => {
         try {
-            data = JSON.parse(text);
-        } catch {
-            console.log("VALIDATE RESPONSE (not JSON):", text);
-            showBlocked("Greška: provjera linka ne radi (pogrešan /exec link ili Web App access).");
-            return;
+            const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
+            const res = await fetch(url);
+            const text = await res.text();
+            const data = JSON.parse(text);
+
+            prefetchedData = data;
+            return data;
+        } catch (e) {
+            console.log("PREFETCH VALIDATE ERROR:", e);
+            prefetchedData = { ok: false, error: "validate_failed" };
+            return prefetchedData;
         }
+    })();
 
-        if (!data.ok) {
-            showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
-            return;
-        }
-
-        if (data.used) {
-            showBlocked("Odgovor je već poslat za ovaj link.");
-            return;
-        }
-
-        // ✅ ime: kad stigne, samo upiši
-        if (nameInput) {
-            if (data.fullName) {
-                nameInput.value = data.fullName;
-                nameInput.readOnly = true;
-            } else {
-                nameInput.value = "";
-                nameInput.placeholder = "Ime i prezime";
-                nameInput.readOnly = false;
-            }
-        }
-
-        setupBrojOsoba(data.maxGuests);
-
-        // ✅ otključaj dugmad tek kad je sve spremno
-        choiceButtons.forEach((b) => (b.disabled = false));
-        setConfirmMessage(CONFIRM_TEXT);
-    } catch (e) {
-        console.log("VALIDATE ERROR:", e);
-        showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
-    }
+    return prefetchPromise;
 }
 
-// ===== ANIMACIJA KOVERTE + PARALELNO VALIDATE =====
-envelope?.addEventListener("click", () => {
+function applyValidatedDataToForm(data) {
+    if (!data || !data.ok) {
+        showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
+        return;
+    }
+    if (data.used) {
+        showBlocked("Odgovor je već poslat za ovaj link.");
+        return;
+    }
+
+
+    if (nameInput) {
+        if (data.fullName) {
+            nameInput.value = data.fullName;
+            nameInput.readOnly = true;
+        } else {
+            nameInput.value = "";
+            nameInput.readOnly = false;
+        }
+    }
+
+    setupBrojOsoba(data.maxGuests);
+
+
+    if (form) form.style.display = "flex";
+    setButtonsDisabled(false);
+    setConfirmMessage(CONFIRM_TEXT);
+}
+
+
+setConfirmMessage(CONFIRM_TEXT);
+
+prefetchValidate();
+
+
+envelope?.addEventListener("click", async () => {
     envelope.classList.add("open");
 
-    // 🚀 odmah kreni sa validate (dok traje animacija)
-    validateTokenAndSetup();
 
     setTimeout(() => {
         envelope.style.display = "none";
         invitationWrap?.classList.add("show");
     }, 760);
+
+
+    if (form) form.style.display = "flex";
+    setButtonsDisabled(true);
+
+
+    const data = await prefetchValidate();
+    applyValidatedDataToForm(data);
 });
 
-// ===== SLANJE ODGOVORA (INSTANT + MINI SPINNER) =====
+
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
@@ -206,12 +199,10 @@ choiceButtons.forEach((btn) => {
         if (odgovorInput) odgovorInput.value = odgovor;
 
         const originalText = btn.textContent;
-
-        // mini spinner na kliknutom dugmetu
         btn.textContent = "⏳";
         choiceButtons.forEach((b) => (b.disabled = true));
 
-        // instant prikaz poruke
+        // instant poruka
         if (form) form.style.display = "none";
         if (centerInfo) centerInfo.style.display = "none";
 
@@ -224,7 +215,7 @@ choiceButtons.forEach((btn) => {
             thankYou.classList.add("show");
         }
 
-        // ✅ broj gostiju: ako ne dolazi -> 0, ako dolazi -> izabrano (min 1)
+
         const brojZaSlanje = (odgovor === "Dolazim") ? (brojOsobaEl?.value || "1") : "0";
 
         const body = new URLSearchParams();
@@ -246,11 +237,11 @@ choiceButtons.forEach((btn) => {
 
             if (!data || !data.ok) throw new Error(data?.error || "Server error");
 
-            // uspjeh: ništa ne diramo, poruka već stoji instant
+
         } catch (err) {
             console.log("POST ERROR:", err);
 
-            // vrati UI da može ponovo
+
             if (thankYou) {
                 thankYou.classList.add("hidden");
                 thankYou.classList.remove("show");
