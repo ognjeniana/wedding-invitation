@@ -1,5 +1,5 @@
 const SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbxcH7acVet5na_Fl5gJZzAkweQsRY72iMp7etkAQPksLLjiwiU3qr5qCdAfUjBGXhXJ/exec";
+    "https://script.google.com/macros/s/AKfycbz6pRc_r48Uxh0d_2Phio60p7TZc2G2OQMLO4zAF0OkjDFDdB4dQiholhRFvZ5cQnQ/exec";
 
 const CONFIRM_TEXT = "Molimo Vas da nam potvrdite dolazak do 30.03.2026.";
 
