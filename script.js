@@ -102,7 +102,7 @@ function setupBrojOsoba(maxGuests) {
     updateButtonTexts(brojOsobaEl?.value || "1");
 }
 
-// 🔒 HARD STOP: nikad ne dozvoli submit refresh
+// 🔒 STOP submit reload
 if (form) {
     form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -111,71 +111,19 @@ if (form) {
     });
 }
 
+// --- INIT ---
 setConfirmMessage(CONFIRM_TEXT);
 
-async function validateTokenAndSetup() {
-    const t = getTokenFromUrl();
+const token = getTokenFromUrl();
+if (tokenInput) tokenInput.value = token;
 
-    if (!t) {
-        showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
-        return;
-    }
+// 🔥 KLJUČNO: forma je skrivena dok ne dođe ime
+if (form) form.style.display = "none";
+if (guestPick) guestPick.style.display = "none";
 
-    if (tokenInput) tokenInput.value = t;
+validateTokenAndSetup();
 
-    // ako je već lokalno poslato, odmah blokiraj
-    if (localStorage.getItem("rsvp_submitted_" + t) === "1") {
-        showBlocked("Odgovor je već poslat za ovaj link.");
-        return;
-    }
-
-    if (form) form.style.display = "flex";
-    lockForm(true);
-    setConfirmMessage(CONFIRM_TEXT);
-
-    try {
-        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(t)}&_=${Date.now()}`;
-        const res = await fetch(url);
-        const text = await res.text();
-
-        let data;
-        try { data = JSON.parse(text); } catch {
-            showBlocked("Greška: provjera linka ne radi (Web App access / deploy).");
-            return;
-        }
-
-        if (!data.ok) {
-            showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
-            return;
-        }
-
-        if (data.used) {
-            showBlocked("Odgovor je već poslat za ovaj link.");
-            // zapamti lokalno da se odmah blokira ubuduće
-            localStorage.setItem("rsvp_submitted_" + t, "1");
-            return;
-        }
-
-        if (nameInput) {
-            if (data.fullName) {
-                nameInput.value = data.fullName;
-                nameInput.readOnly = true;
-            } else {
-                nameInput.readOnly = false;
-            }
-        }
-
-        setupBrojOsoba(data.maxGuests);
-
-        lockForm(false);
-        setConfirmMessage(CONFIRM_TEXT);
-
-    } catch (e) {
-        console.log("VALIDATE ERROR:", e);
-        showBlocked("Došlo je do greške pri provjeri linka. Pokušajte ponovo kasnije.");
-    }
-}
-
+// --- Envelope open ---
 envelope?.addEventListener("click", () => {
     envelope.classList.add("open");
     setTimeout(() => {
@@ -184,6 +132,54 @@ envelope?.addEventListener("click", () => {
     }, 760);
 });
 
+// --- VALIDATE ---
+async function validateTokenAndSetup() {
+    if (!token) {
+        showBlocked("Link nije važeći. Molimo kontaktirajte mladence.");
+        return;
+    }
+
+    try {
+        const url = `${SCRIPT_URL}?action=validate&t=${encodeURIComponent(token)}&_=${Date.now()}`;
+        const res = await fetch(url);
+        const text = await res.text();
+
+        let data;
+        try { data = JSON.parse(text); } catch {
+            showBlocked("Greška: provjera linka ne radi.");
+            return;
+        }
+
+        if (!data.ok) {
+            showBlocked("Link nije važeći.");
+            return;
+        }
+
+        if (data.used) {
+            showBlocked("Odgovor je već poslat za ovaj link.");
+            return;
+        }
+
+        // ✅ Sad kad imamo ime — prikaži formu
+        if (nameInput && data.fullName) {
+            nameInput.value = data.fullName;
+            nameInput.readOnly = true;
+        }
+
+        setupBrojOsoba(data.maxGuests);
+
+        if (form) form.style.display = "flex";
+
+        lockForm(false);
+        setConfirmMessage(CONFIRM_TEXT);
+
+    } catch (e) {
+        console.log("VALIDATE ERROR:", e);
+        showBlocked("Došlo je do greške pri provjeri linka.");
+    }
+}
+
+// --- SUBMIT ---
 choiceButtons.forEach((btn) => {
     btn.addEventListener("click", async (e) => {
         e.preventDefault();
@@ -218,45 +214,17 @@ choiceButtons.forEach((btn) => {
         body.set("brojOsoba", brojZaSlanje);
 
         try {
-            // ✅ POST submit (najpouzdanije za upis u sheet)
             const res = await fetch(SCRIPT_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
                 body: body.toString(),
-                redirect: "follow",
             });
 
-            const text = await res.text();
-            let data = null;
-            try { data = JSON.parse(text); } catch {
-                throw new Error("Server nije vratio JSON. (Deploy/permission/quota)");
-            }
-
-            if (!data.ok) throw new Error(data.error || "Server error");
-
-            // ✅ uspjeh: zaključaj lokalno
-            const t = tokenInput?.value || "";
-            if (t) localStorage.setItem("rsvp_submitted_" + t, "1");
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error);
 
         } catch (err) {
             console.log("SUBMIT ERROR:", err);
-
-            // vrati UI nazad
-            if (thankYou) {
-                thankYou.classList.add("hidden");
-                thankYou.classList.remove("show");
-            }
-
-            btn.textContent = originalText;
-            if (centerInfo) centerInfo.style.display = "block";
-            if (form) form.style.display = "flex";
-            choiceButtons.forEach((b) => (b.disabled = false));
-
-            // 🔥 OVDJE je ključ: pokaži PRAVU grešku
-            setConfirmMessage(`Žao nam je, došlo je do greške: ${String(err?.message || err)}`);
-            setTimeout(() => setConfirmMessage(CONFIRM_TEXT), 6000);
         }
     });
 });
-
-validateTokenAndSetup();
