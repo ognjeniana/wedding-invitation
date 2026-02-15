@@ -215,19 +215,23 @@ choiceButtons.forEach((btn) => {
         body.set("brojOsoba", brojZaSlanje);
 
         try {
-            const res = await fetch(SCRIPT_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
-                body: body.toString(),
-            });
+            const submitUrl =
+                `${SCRIPT_URL}?action=submit` +
+                `&token=${encodeURIComponent(tokenInput?.value || "")}` +
+                `&fullName=${encodeURIComponent(nameInput?.value || "")}` +
+                `&odgovor=${encodeURIComponent(odgovor)}` +
+                `&brojOsoba=${encodeURIComponent(brojZaSlanje)}` +
+                `&_=${Date.now()}`;
 
+            const res = await fetch(submitUrl);
             const text = await res.text();
+
             let data = null;
             try { data = JSON.parse(text); } catch { }
             if (!data || !data.ok) throw new Error(data?.error || "Server error");
 
         } catch (err) {
-            console.log("POST ERROR:", err);
+            console.log("SUBMIT ERROR:", err);
 
             if (thankYou) {
                 thankYou.classList.add("hidden");
@@ -242,6 +246,21 @@ choiceButtons.forEach((btn) => {
             setConfirmMessage("Žao nam je, došlo je do greške. Molimo pokušajte ponovo.");
             setTimeout(() => setConfirmMessage(CONFIRM_TEXT), 3500);
         }
+
+
+        if (thankYou) {
+            thankYou.classList.add("hidden");
+            thankYou.classList.remove("show");
+        }
+
+        btn.textContent = originalText;
+        if (centerInfo) centerInfo.style.display = "block";
+        if (form) form.style.display = "flex";
+        choiceButtons.forEach((b) => (b.disabled = false));
+
+        setConfirmMessage("Žao nam je, došlo je do greške. Molimo pokušajte ponovo.");
+        setTimeout(() => setConfirmMessage(CONFIRM_TEXT), 3500);
+    }
     });
 });
 
